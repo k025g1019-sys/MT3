@@ -11,24 +11,24 @@ struct Matrix4x4 {
 	float m[4][4];
 };
 
-// 1. 行列の加法
+// 行列の加法
 Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2);
-// 2. 行列の減法
+// 行列の減法
 Matrix4x4 Subtract(const Matrix4x4& m1, const Matrix4x4& m2);
-// 3. 行列の積
+// 行列の積
 Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);
-// 4. 逆行列
+// 逆行列
 Matrix4x4 Inverse(const Matrix4x4& m);
-// 5. 転置行列
+// 転置行列
 Matrix4x4 Transpose(const Matrix4x4& m);
-// 6. 単位行列の作成
+// 単位行列の作成
 Matrix4x4 MakeIdentity4x4();
 
-// 7. 平行移動行列
+// 平行移動行列
 Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
-// 8. 拡大縮小行列
+// 拡大縮小行列
 Matrix4x4 MakeScaleMatrix(const Vector3& scale);
-// 9. 座標変換
+// 座標変換
 Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
 
 // X軸回転行列
@@ -37,6 +37,9 @@ Matrix4x4 MakeRotateXMatrix(float radian);
 Matrix4x4 MakeRotateYMatrix(float radian);
 // Z軸回転行列
 Matrix4x4 MakeRotateZMatrix(float radian);
+
+// 3次元アフィン変換行列
+Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
 
 static const int kRowHeight = 20;
 static const int kColumnWidth = 60;
@@ -55,7 +58,7 @@ void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label
 	}
 }
 
-const char kWindowTitle[] = "LE2A_12_スズキ_ダイスケ_MT3_00_04";
+const char kWindowTitle[] = "LE2A_12_スズキ_ダイスケ_MT3_00_05";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
@@ -67,7 +70,9 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	char keys[256] = {0};
 	char preKeys[256] = {0};
 
+	Vector3 scale{1.2f, 0.79f, -2.1f};
 	Vector3 rotate{0.4f, 1.43f, -0.8f};
+	Vector3 translate{2.7f, -4.15f, 1.57f};
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -82,10 +87,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		/// ↓更新処理ここから
 		///
 
-		Matrix4x4 rotateXMatrix = MakeRotateXMatrix(rotate.x);
-		Matrix4x4 rotateYMatrix = MakeRotateYMatrix(rotate.y);
-		Matrix4x4 rotateZMatrix = MakeRotateZMatrix(rotate.z);
-		Matrix4x4 rotateXYZMatrix = Multiply(rotateXMatrix, Multiply(rotateYMatrix, rotateZMatrix));
+		Matrix4x4 worldMatrix = MakeAffineMatrix(scale, rotate, translate);
 
 		///
 		/// ↑更新処理ここまで
@@ -95,10 +97,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		/// ↓描画処理ここから
 		///
 
-		MatrixScreenPrintf(0, 0, rotateXMatrix, "rotateXMatrix");
-		MatrixScreenPrintf(0, kRowHeight * 5, rotateYMatrix, "rotateYMatrix");
-		MatrixScreenPrintf(0, kRowHeight * 5 * 2, rotateZMatrix, "rotateZMatrix");
-		MatrixScreenPrintf(0, kRowHeight * 5 * 3, rotateXYZMatrix, "rotateXYZMatrix");
+		MatrixScreenPrintf(0, 0, worldMatrix, "worldMatrix");
 
 		///
 		/// ↑描画処理ここまで
@@ -118,7 +117,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	return 0;
 }
 
-// 1. 行列の加法
+// 行列の加法
 Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2) {
 	Matrix4x4 result{};
 	for (int i = 0; i < 4; i++) {
@@ -129,7 +128,7 @@ Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2) {
 	return result;
 };
 
-// 2. 行列の減法
+// 行列の減法
 Matrix4x4 Subtract(const Matrix4x4& m1, const Matrix4x4& m2) {
 	Matrix4x4 result{};
 	for (int i = 0; i < 4; i++) {
@@ -140,7 +139,7 @@ Matrix4x4 Subtract(const Matrix4x4& m1, const Matrix4x4& m2) {
 	return result;
 };
 
-// 3. 行列の積
+// 行列の積
 Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 	Matrix4x4 result{};
 	for (int i = 0; i < 4; i++) {
@@ -151,7 +150,7 @@ Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 	return result;
 };
 
-// 4. 逆行列
+// 逆行列
 Matrix4x4 Inverse(const Matrix4x4& m) {
 	Matrix4x4 a = m;                   // 作業用
 	Matrix4x4 inv = MakeIdentity4x4(); // 単位行列
@@ -199,7 +198,7 @@ Matrix4x4 Inverse(const Matrix4x4& m) {
 	return inv;
 }
 
-// 5. 転置行列
+// 転置行列
 Matrix4x4 Transpose(const Matrix4x4& m) {
 	Matrix4x4 result{};
 	for (int i = 0; i < 4; i++) {
@@ -210,7 +209,7 @@ Matrix4x4 Transpose(const Matrix4x4& m) {
 	return result;
 };
 
-// 6. 単位行列の作成
+// 単位行列の作成
 Matrix4x4 MakeIdentity4x4() {
 	Matrix4x4 result{};
 	for (int i = 0; i < 4; i++) {
@@ -221,7 +220,7 @@ Matrix4x4 MakeIdentity4x4() {
 	return result;
 }
 
-// 7. 平行移動行列
+// 平行移動行列
 Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
 	Matrix4x4 result = MakeIdentity4x4();
 	result.m[3][0] = translate.x;
@@ -229,7 +228,7 @@ Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
 	result.m[3][2] = translate.z;
 	return result;
 }
-// 8. 拡大縮小行列
+// 拡大縮小行列
 Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
 	Matrix4x4 result = MakeIdentity4x4();
 	result.m[0][0] = scale.x;
@@ -237,7 +236,7 @@ Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
 	result.m[2][2] = scale.z;
 	return result;
 }
-// 9. 座標変換
+// 座標変換
 Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
 	Vector3 result{};
 	result.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0] + matrix.m[3][0];
@@ -291,4 +290,22 @@ Matrix4x4 MakeRotateZMatrix(float radian) {
 	result.m[1][1] = c;
 
 	return result;
+}
+
+// 3次元アフィン変換行列
+Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
+	// 各行列を作成
+	Matrix4x4 scaleMat = MakeScaleMatrix(scale);
+	Matrix4x4 rotXMat = MakeRotateXMatrix(rotate.x);
+	Matrix4x4 rotYMat = MakeRotateYMatrix(rotate.y);
+	Matrix4x4 rotZMat = MakeRotateZMatrix(rotate.z);
+	Matrix4x4 transMat = MakeTranslateMatrix(translate);
+
+	// 回転行列を合成（X → Y → Z）
+	Matrix4x4 rotMat = Multiply(rotXMat, Multiply(rotYMat, rotZMat));
+
+	// アフィン行列 = S * R * T
+	Matrix4x4 affine = Multiply(scaleMat, Multiply(rotMat, transMat));
+
+	return affine;
 }
