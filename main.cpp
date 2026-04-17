@@ -1,73 +1,13 @@
+#include "Vector3.h"
+#include "Matrix4x4.h"
 #include <Novice.h>
 #define _USE_MATH_DEFINES
 #include <assert.h>
 #include <cmath>
-#include <utility>
-// #ifdef ImGui
+
+#ifdef ImGui
 #include <imgui.h>
-// #endif
-
-struct Vector3 {
-	float x, y, z;
-};
-
-struct Matrix4x4 {
-	float m[4][4];
-};
-
-#pragma region 関数宣言
-
-#pragma region
-
-// 行列の加法
-Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2);
-// 行列の減法
-Matrix4x4 Subtract(const Matrix4x4& m1, const Matrix4x4& m2);
-// 行列の積
-Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);
-// 逆行列
-Matrix4x4 Inverse(const Matrix4x4& m);
-// 転置行列
-Matrix4x4 Transpose(const Matrix4x4& m);
-// 単位行列の作成
-Matrix4x4 MakeIdentity4x4();
-
-#pragma endregion
-
-#pragma region
-
-// 平行移動行列
-Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
-// 拡大縮小行列
-Matrix4x4 MakeScaleMatrix(const Vector3& scale);
-// 座標変換
-Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix);
-
-// X軸回転行列
-Matrix4x4 MakeRotateXMatrix(float radian);
-// Y軸回転行列
-Matrix4x4 MakeRotateYMatrix(float radian);
-// Z軸回転行列
-Matrix4x4 MakeRotateZMatrix(float radian);
-
-// 3次元アフィン変換行列
-Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
-
-#pragma endregion
-
-#pragma region
-
-// 透視投影行列
-Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float faeClip);
-// 正射影行列
-Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip);
-// ビューポート行列
-Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth);
-
-// クロス積
-Vector3 Cross(const Vector3& v1, const Vector3& v2);
-
-#pragma endregion
+#endif
 
 #pragma region ScreenPrintf関数
 
@@ -87,8 +27,6 @@ void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label
 		}
 	}
 }
-
-#pragma endregion
 
 #pragma endregion
 
@@ -183,7 +121,7 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 
 #pragma endregion
 
-const char kWindowTitle[] = "LE2A_12_スズキ_ダイスケ_MT3_01_02";
+const char kWindowTitle[] = "Window";
 const int kWindowWidth = 1280;
 const int kWindowHeight = 720;
 
@@ -197,33 +135,52 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	char keys[256] = {0};
 	char preKeys[256] = {0};
 
+	#pragma region カメラの設定
+
 	// カメラの初期位置, 角度
 	Vector3 cameraPosition{0.0f, 0.0f, -6.0f};
 	Vector3 cameraRotate{0.3f, 0.0f, 0.0f};
-
 	// カメラ移動速度
-	float moveSpeed = 0.1f;
-	float rotateSpeed = 0.02f;
+	//float moveSpeed = 0.1f;
+	//float rotateSpeed = 0.02f;
+
+	#pragma endregion
+
+	#pragma region 三角形
 
 	// 三角形のローカル座標
-	Vector3 kLocalVertices[3]{
+	Vector3 kTriangleLocalVertices[3]{
 	    {0.0f,  0.8f,  0.0f},
         {0.8f,  -0.8f, 0.0f},
         {-0.8f, -0.8f, 0.0f}
     };
+	Vector3 triangleRotate{};
+	Vector3 triangleTranslate{};
+	// スクリーン座標
+	Vector3 screenTriangleVertices[3];
 
-	Vector3 rotate{};
-	Vector3 translate{};
+	#pragma endregion
 
-	Vector3 screenVertices[3];
+	#pragma region 点と線分
 
-	Sphere sphere{
-	    {0.0f, 1.0f, 0.0f},
-        1.0f
+	Segment segment{
+	    {-2.0f, -1.0f, 0.0f},
+        {3.0f,  2.0f,  2.0f}
     };
+	Vector3 point{-1.5f, 0.6f, 0.6f};
+	// pointを線分に射影したベクトル。今回は正しく計算できているかを確認するためだけに使う
+	Vector3 project = Project(Subtract(point, segment.origin), segment.diff);
 
-	Vector3 v1{1.2f, -3.9f, 2.5f};
-	Vector3 v2{2.8f, 0.4f, -1.3f};
+	// この値が線分上の点を表す
+	Vector3 closestPoint = ClosestPoint(point, segment);
+
+	Sphere pointSphere{point, 0.01f};
+	Sphere closestPointSphere{closestPoint, 0.01f};
+
+	#pragma endregion
+
+	//Vector3 v1{1.2f, -3.9f, 2.5f};
+	//Vector3 v2{2.8f, 0.4f, -1.3f};
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -238,43 +195,62 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		/// ↓更新処理ここから
 		///
 
-		// 上下左右キーでカメラ移動
-		if (keys[DIK_RIGHT] != keys[DIK_LEFT])
-			cameraPosition.x += keys[DIK_RIGHT] ? moveSpeed : -moveSpeed;
-		if (keys[DIK_UP] != keys[DIK_DOWN])
-			cameraPosition.y += keys[DIK_UP] ? moveSpeed : -moveSpeed;
-		if (keys[DIK_O] != keys[DIK_L])
-			cameraPosition.z += keys[DIK_O] ? moveSpeed : -moveSpeed;
+		#pragma region ImGui
 
-		// カメラの回転（ピッチ角変更）
-		if (keys[DIK_U] != keys[DIK_J])
-			cameraRotate.x += keys[DIK_U] ? rotateSpeed : -rotateSpeed;
-		if (keys[DIK_K] != keys[DIK_H])
-			cameraRotate.y += keys[DIK_K] ? rotateSpeed : -rotateSpeed;
-
-		// 三角形のY軸回転
-		rotate.y += 0.02f;
-
-		// WSキーで前後移動
-		if (keys[DIK_W] != keys[DIK_S])
-			sphere.center.z += keys[DIK_W] ? 0.1f : -0.1f;
-
-		// ADキーで左右移動
-		if (keys[DIK_D] != keys[DIK_A])
-			sphere.center.x += keys[DIK_D] ? 0.05f : -0.05f;
-
-		// #ifdef ImGui
+		#ifdef ImGui
 
 		ImGui::Begin("window");
-		ImGui::DragFloat3("CameraTranlate", &cameraPosition.x, 0.01f);
-		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
-		ImGui::DragFloat3("SphereCenter", &sphere.center.x, 0.01f);
-		ImGui::DragFloat3("SphereRadius", &sphere.radius, 0.01f);
+		// ImGui::DragFloat3("CameraTranlate", &cameraPosition.x, 0.01f);
+		// ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
+		// ImGui::DragFloat3("SphereCenter", &pointSphere.center.x, 0.01f);
+		// ImGui::DragFloat3("SphereRadius", &pointSphere.radius, 0.01f);
+
+		ImGui::InputFloat3("Point", &point.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
+		ImGui::InputFloat3("Segment origin", &segment.origin.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
+		ImGui::InputFloat3("Segment diff", &segment.diff.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
+		ImGui::InputFloat3("Project", &project.x, "%.3f", ImGuiInputTextFlags_ReadOnly);
 		ImGui::End();
 
-		// #endif
+		#endif
 
-		Vector3 cross = Cross(v1, v2);
+		#pragma endregion
+
+		#pragma region カメラの入力処理
+
+		// 上下左右キーでカメラ移動
+		//if (keys[DIK_RIGHT] != keys[DIK_LEFT])
+		//	cameraPosition.x += keys[DIK_RIGHT] ? moveSpeed : -moveSpeed;
+		//if (keys[DIK_UP] != keys[DIK_DOWN])
+		//	cameraPosition.y += keys[DIK_UP] ? moveSpeed : -moveSpeed;
+		//if (keys[DIK_O] != keys[DIK_L])
+		//	cameraPosition.z += keys[DIK_O] ? moveSpeed : -moveSpeed;
+
+		// カメラの回転（ピッチ角変更）
+		//if (keys[DIK_U] != keys[DIK_J])
+		//	cameraRotate.x += keys[DIK_U] ? rotateSpeed : -rotateSpeed;
+		//if (keys[DIK_K] != keys[DIK_H])
+		//	cameraRotate.y += keys[DIK_K] ? rotateSpeed : -rotateSpeed;
+
+		#pragma endregion
+
+		#pragma region 球の入力処理
+
+		// WSキーで球の前後移動
+		//if (keys[DIK_W] != keys[DIK_S])
+		//	pointSphere.center.z += keys[DIK_W] ? 0.1f : -0.1f;
+
+		// ADキーで球の左右移動
+		//if (keys[DIK_D] != keys[DIK_A])
+		//	pointSphere.center.x += keys[DIK_D] ? 0.05f : -0.05f;
+
+		#pragma endregion
+
+		// 三角形のY軸回転
+		// rotate.y += 0.02f;
+
+		//Vector3 cross = Cross(v1, v2);
+
+		#pragma region カメラのスケール・回転・平行移動
 
 		// カメラの回転行列（逆回転）
 		Matrix4x4 cameraRotX = MakeRotateXMatrix(-cameraRotate.x);
@@ -284,18 +260,37 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		// カメラの平行移動（逆方向）
 		Matrix4x4 cameraTrans = MakeTranslateMatrix({-cameraPosition.x, -cameraPosition.y, -cameraPosition.z});
 
+		#pragma endregion
+
+		#pragma region 行列計算
+
 		// ビュー行列 = R^-1 * T^-1
 		Matrix4x4 viewMatrix = Multiply(Multiply(cameraRotX, cameraRotY), Multiply(cameraRotZ, cameraTrans));
 
 		// 各種行列の計算
-		Matrix4x4 worldMatrix = MakeAffineMatrix({1.0f, 1.0f, 1.0f}, rotate, translate);
+		// 行列の計算・変換は描画の直前に置くのが良い
 		Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kWindowWidth) / float(kWindowHeight), 0.1f, 100.0f);
-		Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, float(kWindowWidth), float(kWindowHeight), 0.0f, 1.0f);
+
+		#pragma endregion
+
+		#pragma region スクリーン座標に変換
+
+		// 三角形のSRTをMatrixに変換
+		Matrix4x4 worldMatrix = MakeAffineMatrix({1.0f, 1.0f, 1.0f}, triangleRotate, triangleTranslate);
+		Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
+		// 頂点を変換
 		for (uint32_t i = 0; i < 3; ++i) {
-			Vector3 ndVertex = Transform(kLocalVertices[i], worldViewProjectionMatrix);
-			screenVertices[i] = Transform(ndVertex, viewportMatrix);
+			Vector3 ndVertex = Transform(kTriangleLocalVertices[i], worldViewProjectionMatrix);
+			screenTriangleVertices[i] = Transform(ndVertex, viewportMatrix);
 		}
+
+		// 線分の始点と終点を変換
+		Vector3 start = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
+		Vector3 end = Transform(Transform(Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
+
+		#pragma endregion
 
 		///
 		/// ↑更新処理ここまで
@@ -305,15 +300,25 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		/// ↓描画処理ここから
 		///
 
-		VectorScreenPrintf(0, 0, cross, "Cross");
+		//VectorScreenPrintf(0, 0, cross, "Cross");
 
-		DrawGrid(Multiply(viewMatrix, projectionMatrix), viewportMatrix);
+		#pragma region Draw
 
-		// 描画
+		// グリッド
+		DrawGrid(viewProjectionMatrix, viewportMatrix);
+
+		// 三角形
 		//Novice::DrawTriangle(
 		//    int(screenVertices[0].x), int(screenVertices[0].y), int(screenVertices[1].x), int(screenVertices[1].y), int(screenVertices[2].x), int(screenVertices[2].y), RED, kFillModeSolid);
 
-		DrawSphere(sphere, Multiply(viewMatrix, projectionMatrix), viewportMatrix, 0xFFFFFFFF);
+		// 点の描画
+		DrawSphere(pointSphere, viewProjectionMatrix, viewportMatrix, 0xFF0000FF);
+		DrawSphere(closestPointSphere, viewProjectionMatrix, viewportMatrix, 0x000000FF);
+
+		// 線分
+		Novice::DrawLine(int(start.x), int(start.y), int(end.x), int(end.y), 0xFFFFFFFF);
+
+		#pragma endregion
 
 		///
 		/// ↑描画処理ここまで
@@ -332,268 +337,3 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	Novice::Finalize();
 	return 0;
 }
-
-#pragma region 関数定義
-
-#pragma region
-
-// 行列の加法
-Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2) {
-	Matrix4x4 result{};
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			result.m[i][j] = m1.m[i][j] + m2.m[i][j];
-		}
-	}
-	return result;
-};
-
-// 行列の減法
-Matrix4x4 Subtract(const Matrix4x4& m1, const Matrix4x4& m2) {
-	Matrix4x4 result{};
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			result.m[i][j] = m1.m[i][j] - m2.m[i][j];
-		}
-	}
-	return result;
-};
-
-// 行列の積
-Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
-	Matrix4x4 result{};
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			result.m[i][j] = m1.m[i][0] * m2.m[0][j] + m1.m[i][1] * m2.m[1][j] + m1.m[i][2] * m2.m[2][j] + m1.m[i][3] * m2.m[3][j];
-		}
-	}
-	return result;
-};
-
-// 逆行列
-Matrix4x4 Inverse(const Matrix4x4& m) {
-	Matrix4x4 a = m;                   // 作業用
-	Matrix4x4 inv = MakeIdentity4x4(); // 単位行列
-
-	for (int i = 0; i < 4; i++) {
-		// ピボット選択（0 なら失敗）
-		float pivot = a.m[i][i];
-		if (fabs(pivot) < 1e-6f) {
-			// ピボットが小さすぎる場合、行を交換する
-			for (int r = i + 1; r < 4; r++) {
-				if (fabs(a.m[r][i]) > 1e-6f) {
-					// std::swap ... 変数同士の値を入れ替える
-					std::swap(a.m[i], a.m[r]);
-					std::swap(inv.m[i], inv.m[r]);
-					pivot = a.m[i][i];
-					break;
-				}
-			}
-		}
-
-		// それでも pivot が 0 なら逆行列なし
-		if (fabs(pivot) < 1e-6f) {
-			return MakeIdentity4x4(); // 失敗時の代替（適宜変更）
-		}
-
-		// ピボット行を 1 に正規化
-		float invPivot = 1.0f / pivot;
-		for (int j = 0; j < 4; j++) {
-			a.m[i][j] *= invPivot;
-			inv.m[i][j] *= invPivot;
-		}
-
-		// 他の行からピボット列を消去
-		for (int r = 0; r < 4; r++) {
-			if (r == i)
-				continue;
-			float factor = a.m[r][i];
-			for (int c = 0; c < 4; c++) {
-				a.m[r][c] -= factor * a.m[i][c];
-				inv.m[r][c] -= factor * inv.m[i][c];
-			}
-		}
-	}
-
-	return inv;
-}
-
-// 転置行列
-Matrix4x4 Transpose(const Matrix4x4& m) {
-	Matrix4x4 result{};
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			result.m[i][j] = m.m[j][i];
-		}
-	}
-	return result;
-};
-
-// 単位行列の作成
-Matrix4x4 MakeIdentity4x4() {
-	Matrix4x4 result{};
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			result.m[i][j] = (i == j) ? 1.0f : 0.0f;
-		}
-	}
-	return result;
-}
-
-#pragma endregion
-
-#pragma region
-
-// 平行移動行列
-Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
-	Matrix4x4 result = MakeIdentity4x4();
-	result.m[3][0] = translate.x;
-	result.m[3][1] = translate.y;
-	result.m[3][2] = translate.z;
-	return result;
-}
-// 拡大縮小行列
-Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
-	Matrix4x4 result = MakeIdentity4x4();
-	result.m[0][0] = scale.x;
-	result.m[1][1] = scale.y;
-	result.m[2][2] = scale.z;
-	return result;
-}
-// 座標変換
-Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
-	Vector3 result{};
-	result.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0] + matrix.m[3][0];
-	result.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1] + matrix.m[3][1];
-	result.z = vector.x * matrix.m[0][2] + vector.y * matrix.m[1][2] + vector.z * matrix.m[2][2] + matrix.m[3][2];
-	float w = vector.x * matrix.m[0][3] + vector.y * matrix.m[1][3] + vector.z * matrix.m[2][3] + matrix.m[3][3];
-	assert(w != 0.0f);
-	result.x /= w;
-	result.y /= w;
-	result.z /= w;
-	return result;
-}
-
-// X軸回転行列
-Matrix4x4 MakeRotateXMatrix(float radian) {
-	Matrix4x4 result = MakeIdentity4x4();
-	float c = std::cos(radian);
-	float s = std::sin(radian);
-
-	result.m[1][1] = c;
-	result.m[1][2] = s;
-	result.m[2][1] = -s;
-	result.m[2][2] = c;
-
-	return result;
-}
-
-// Y軸回転行列
-Matrix4x4 MakeRotateYMatrix(float radian) {
-	Matrix4x4 result = MakeIdentity4x4();
-	float c = std::cos(radian);
-	float s = std::sin(radian);
-
-	result.m[0][0] = c;
-	result.m[0][2] = -s;
-	result.m[2][0] = s;
-	result.m[2][2] = c;
-
-	return result;
-}
-
-// Z軸回転行列
-Matrix4x4 MakeRotateZMatrix(float radian) {
-	Matrix4x4 result = MakeIdentity4x4();
-	float c = std::cos(radian);
-	float s = std::sin(radian);
-
-	result.m[0][0] = c;
-	result.m[0][1] = s;
-	result.m[1][0] = -s;
-	result.m[1][1] = c;
-
-	return result;
-}
-
-// 3次元アフィン変換行列
-Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
-	// 各行列を作成
-	Matrix4x4 scaleMat = MakeScaleMatrix(scale);
-	Matrix4x4 rotXMat = MakeRotateXMatrix(rotate.x);
-	Matrix4x4 rotYMat = MakeRotateYMatrix(rotate.y);
-	Matrix4x4 rotZMat = MakeRotateZMatrix(rotate.z);
-	Matrix4x4 transMat = MakeTranslateMatrix(translate);
-
-	// 回転行列を合成（X → Y → Z）
-	Matrix4x4 rotMat = Multiply(rotXMat, Multiply(rotYMat, rotZMat));
-
-	// アフィン行列 = S * R * T
-	Matrix4x4 affine = Multiply(scaleMat, Multiply(rotMat, transMat));
-
-	return affine;
-}
-
-#pragma endregion
-
-#pragma region
-
-// 透視投影行列
-Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip) {
-	Matrix4x4 result{};
-
-	float yScale = 1.0f / std::tan(fovY * 0.5f);
-	float xScale = yScale / aspectRatio;
-
-	result.m[0][0] = xScale;
-	result.m[1][1] = yScale;
-	result.m[2][2] = farClip / (farClip - nearClip);
-	result.m[2][3] = 1.0f;
-	result.m[3][2] = (-nearClip * farClip) / (farClip - nearClip);
-
-	return result;
-}
-
-// 正射影行列
-Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip) {
-	Matrix4x4 result{};
-
-	result.m[0][0] = 2.0f / (right - left);
-	result.m[1][1] = 2.0f / (top - bottom);
-	result.m[2][2] = 1.0f / (farClip - nearClip);
-
-	result.m[3][0] = (left + right) / (left - right);
-	result.m[3][1] = (top + bottom) / (bottom - top);
-	result.m[3][2] = nearClip / (nearClip - farClip);
-	result.m[3][3] = 1.0f;
-
-	return result;
-}
-
-// ビューポート行列
-Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth) {
-	Matrix4x4 result = MakeIdentity4x4();
-
-	result.m[0][0] = width / 2.0f;
-	result.m[1][1] = -height / 2.0f;
-	result.m[2][2] = maxDepth - minDepth;
-
-	result.m[3][0] = left + width / 2.0f;
-	result.m[3][1] = top + height / 2.0f;
-	result.m[3][2] = minDepth;
-
-	return result;
-}
-
-// クロス積
-Vector3 Cross(const Vector3& v1, const Vector3& v2) {
-	Vector3 result{};
-	result.x = v1.y * v2.z - v1.z * v2.y;
-	result.y = v1.z * v2.x - v1.x * v2.z;
-	result.z = v1.x * v2.y - v1.y * v2.x;
-	return result;
-}
-
-#pragma endregion
-
-#pragma endregion
