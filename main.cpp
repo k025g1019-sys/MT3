@@ -38,7 +38,7 @@ void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label
 // Red : z
 // Blue : x
 void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
-	const float kGridHalfWidth = 5.0f;                                      // Gridの半分の幅
+	const float kGridHalfWidth = 2.0f;                                      // Gridの半分の幅
 	const uint32_t kSubdivision = 10;                                       // 分割数
 	const float kGridEvery = (kGridHalfWidth * 2.0f) / float(kSubdivision); // 1つ分の長さ
 
@@ -139,9 +139,6 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 
 #pragma endregion
 
-// 球同士の当たり判定
-bool IsCollision(const Sphere& s1, const Sphere& s2);
-
 // 2点間の距離を求める
 double Length(const Vector3& center1, const Vector3& center2) {
 	return std::sqrt(
@@ -149,6 +146,9 @@ double Length(const Vector3& center1, const Vector3& center2) {
 		(center2.y - center1.y) * (center2.y - center1.y) +
 		(center2.z - center1.z) * (center2.z - center1.z));
 }
+
+// 球同士の当たり判定
+bool IsCollision(const Sphere& s1, const Sphere& s2);
 
 const char kWindowTitle[] = "Window";
 const int kWindowWidth = 1280;
@@ -167,8 +167,8 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	#pragma region カメラの設定
 
 	// カメラの初期位置, 角度
-	Vector3 cameraPosition{0.0f, 0.0f, -20.0f};
-	Vector3 cameraRotate{0.5f, 0.0f, 0.0f};
+	Vector3 cameraPosition{0.0f, 1.9f, -6.49f};
+	Vector3 cameraRotate{0.26f, 0.0f, 0.0f};
 	// カメラ移動速度
 	float cameraMoveSpeed = 0.04f;
 	float cameraRotateSpeed = 0.01f;
@@ -194,17 +194,17 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 
 	// 球の初期座標
 	std::vector<Vector3> point = {
-	    {0.0f, 1.0f, -4.0f},
-	    {2.0f, 0.5f, 2.0f},
+	    {0.0f, 0.5f, -2.0f},
+	    {1.0f, 0.25f, 1.0f},
 	};
 
 	// 大きさを決める
 	std::vector<Sphere> pointSphere = {
-	    {point[0], 1.0f},
-	    {point[1], 0.5f}
+	    {point[0], 0.5f},
+	    {point[1], 0.25f}
 	};
 
-	float Sphere1MoveSpeed = 0.07f;
+	float Sphere1MoveSpeed = 0.03f;
 	unsigned int sphere1Color = 0xFFFFFFFF;
 
 	#pragma endregion
@@ -227,16 +227,19 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		//#ifdef ImGui
 
 		ImGui::Begin("window");
-
 		size_t sphereSize = pointSphere.size();
 		for (int i = 0; i < sphereSize; ++i) {
 			std::string label1 = "Sphere[" + std::to_string(i) + "].center";
 			std::string label2 = "Sphere[" + std::to_string(i) + "].Radius";
 
-			ImGui::SliderFloat3(label1.c_str(), &pointSphere[i].center.x, -5.0f, 5.0f);
-			ImGui::SliderFloat(label2.c_str(), &pointSphere[i].radius, -0.1f, 5.0f);
+			ImGui::DragFloat3(label1.c_str(), &pointSphere[i].center.x, 0.01f);
+			ImGui::DragFloat(label2.c_str(), &pointSphere[i].radius, 0.01f);
 		}
+		ImGui::End();
 
+		ImGui::Begin("CameraTranslate");
+		ImGui::DragFloat3("CameraTranslate", &cameraPosition.x, 0.01f);
+		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
 		ImGui::End();
 
 		//#endif
@@ -291,14 +294,11 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		// 三角形のY軸回転
 		// rotate.y += 0.02f;
 
-		// 2つの球の中心点間の距離を求める
-		double distance = Length(pointSphere[0].center, pointSphere[1].center);
-
-		if (distance <= pointSphere[0].radius + pointSphere[1].radius) {
+		if (IsCollision(pointSphere[0], pointSphere[1])) {
 			sphere1Color = 0xFF0000FF;
 		} else {
 			sphere1Color = 0xFFFFFFFF;
-		}
+		}	
 
 		#pragma region カメラのスケール・回転・平行移動
 
@@ -384,4 +384,11 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	// ライブラリの終了
 	Novice::Finalize();
 	return 0;
+}
+
+// 球同士の当たり判定
+bool IsCollision(const Sphere& s1, const Sphere& s2) {
+	// 2つの球の中心点間の距離を求める
+	double distance = Length(s1.center, s2.center);
+	return distance <= s1.radius + s2.radius;
 }
