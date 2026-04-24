@@ -62,7 +62,7 @@ void Sphere::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewpo
 
 #pragma region Plane
 
-Vector3 Plane::Perpendicular(const Vector3& vector) {
+Vector3 Plane::Perpendicular(const Vector3& vector) const {
 	if (vector.x != 0.0f || vector.y != 0.0f) {
 		return {-vector.y, vector.x, 0.0f};
 	}
@@ -122,7 +122,7 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 	const float kGridEvery = (kGridHalfWidth * 2.0f) / float(kSubdivision); // 1つ分の長さ
 
 	// ビュー射影→ビューポートの合成行列（v * VP * Viewport）
-	Matrix4x4 vpvMatrix = Multiply(viewProjectionMatrix, viewportMatrix);
+	const Matrix4x4 vpvMatrix = Multiply(viewProjectionMatrix, viewportMatrix);
 
 	// 奥から手前への線（X一定でZ方向に伸びる線）
 	for (uint32_t xIndex = 0; xIndex <= kSubdivision; ++xIndex) {

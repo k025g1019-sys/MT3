@@ -21,12 +21,12 @@ public:
 	void UpdateToKeyMove(const char* keys);
 	void Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
 
-	Vector3 GetCenter() const { return center_; }
-	float GetRadius() const { return radius_; }
+	const Vector3 GetCenter() const { return center_; }
+	const float GetRadius() const { return radius_; }
 
-	void SetCenter(const Vector3& p) { center_ = p; }
-	void SetRadius(const float& p) { radius_ = p; }
-	void SetColor(const unsigned int& p) { color_ = p; }
+	void SetCenter(Vector3 p) { center_ = p; }
+	void SetRadius(float p) { radius_ = p; }
+	void SetColor(unsigned int p) { color_ = p; }
 
 private:
 	Vector3 center_; // 中心点
@@ -47,14 +47,14 @@ struct PlaneDesc {
 class Plane {
 public:
 	Plane(const PlaneDesc& desc) : normal(desc.normal), distance(desc.distance) {}
-	Vector3 Perpendicular(const Vector3& vector);
+	Vector3 Perpendicular(const Vector3& vector) const;
 	void Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
 
-	Vector3 GetNormal() const { return normal; }
-	float GetDistance() const { return distance; }
+	const Vector3 GetNormal() const { return normal; }
+	const float GetDistance() const { return distance; }
 
-	void SetNormal(const Vector3& p) { normal = p; }
-	void SetDistance(const float& p) { distance = p; }
+	void SetNormal(Vector3& p) { normal = p; }
+	void SetDistance(float& p) { distance = p; }
 
 private:
 	Vector3 normal; //!< 法線
