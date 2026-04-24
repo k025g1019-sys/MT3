@@ -307,3 +307,28 @@ Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
 }
 
 #pragma endregion
+
+#pragma region
+
+Vector3 Multiply(float s, const Vector3& v) {
+    return {v.x * s, v.y * s, v.z * s};
+}
+
+// ベクトルの長さ
+float Length(const Vector3& v) {
+    return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+
+// 正規化
+Vector3 Normalize(const Vector3& v) {
+	float len = Length(v);
+
+	// 0除算防止
+	if (len < 1e-6f) {
+		return {0.0f, 0.0f, 0.0f};
+	}
+
+	return {v.x / len, v.y / len, v.z / len};
+}
+
+#pragma endregion

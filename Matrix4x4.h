@@ -81,3 +81,15 @@ Vector3 Project(const Vector3& v1, const Vector3& v2);
 Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
 
 #pragma endregion
+
+#pragma region
+
+Vector3 Multiply(float s, const Vector3& v);
+
+// ベクトルの長さ
+float Length(const Vector3& v);
+
+// 正規化
+Vector3 Normalize(const Vector3& v);
+
+#pragma endregion

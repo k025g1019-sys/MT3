@@ -23,6 +23,18 @@
     <ClCompile Include="Matrix4x4.cpp">
       <Filter>KamataEngine</Filter>
     </ClCompile>
+    <ClCompile Include="Collision.cpp">
+      <Filter>KamataEngine\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Structure.cpp">
+      <Filter>KamataEngine\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>KamataEngine\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>KamataEngine\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\KamataEngine\DirectXGame\audio\Audio.h">
@@ -108,5 +120,17 @@
     </ClInclude>
     <ClInclude Include="Vector3.h" />
     <ClInclude Include="Matrix4x4.h" />
+    <ClInclude Include="Collision.h">
+      <Filter>KamataEngine\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Structure.h">
+      <Filter>KamataEngine\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>KamataEngine\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>KamataEngine\Source</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
