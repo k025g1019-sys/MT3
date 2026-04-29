@@ -1,8 +1,6 @@
-#include "Vector3.h"
+#include "Collision.h"
 #include "Matrix4x4.h"
 #include <cmath>
-#include "Structure.h"
-#include "Collision.h"
 
 // 2点間の距離を求める
 float Length(const Vector3& center1, const Vector3& center2) {
@@ -21,7 +19,7 @@ bool IsSpherePlaneCollision(const Sphere& sphere, const Plane& plane) {
 	Vector3 center = sphere.GetCenter();
 
 	// 平面の法線
-	Vector3 normal = Normalize(plane.GetNormal());
+	Vector3 normal = plane.GetNormal();
 	float d = plane.GetDistance(); // ax + by + cz + d の d
 
 	// 点と平面の距離
@@ -35,4 +33,26 @@ bool IsSpherePlaneCollision(const Sphere& sphere, const Plane& plane) {
 	float distance = std::abs(Dot(diff, normal));
 
 	return distance <= sphere.GetRadius();
+}
+
+// 線と平面の衝突判定
+bool IsSegmentPlaneCollision(const Segment& segment, const Plane& plane) {
+
+	// 垂直判定を行うために、法線と線の内積を求める
+	float dot = Dot(plane.GetNormal(), segment.GetDiff());
+
+	// 垂直=平行であるので、衝突しているはずがない
+	if (dot == 0.0f) {
+		return false;
+	}
+
+	// tを求める
+	float t = (plane.GetDistance() - Dot(segment.GetOrigin(), plane.GetNormal())) / dot;
+
+	// tの値と線の種類によって衝突しているかを判断する
+	if (t >= 0.0f && t <= 1.0f) {
+		return true;
+	}
+
+	return false;
 }

@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include "Structure.h"
 #include "Collision.h"
 #include <Novice.h>
 // #ifdef ImGui
@@ -51,12 +52,17 @@ void TitleScene::Draw() {}
 GameScene::GameScene() {
 
 	spheres = {
-	    Sphere({.center = {0.0f, 0.5f, -2.0f}, .radius = 0.5f, .moveSpeed = 0.03f}
-        ),
+	    //Sphere({.center = {0.0f, 0.5f, -2.0f}, .radius = 0.5f, .moveSpeed = 0.03f}
+        //),
     };
 
 	planes = {
 	    Plane({.normal = {0.0f, 1.0f, 0.0f}, .distance = 1.5f}
+		),
+	};
+
+	segments = {
+	    Segment({.origin = {-0.45f, 0.41f, 0.0f}, .diff = {1.0f, 0.58f, 0.0f}}
 		),
 	};
 
@@ -74,31 +80,55 @@ void GameScene::Update(SceneManager& manager) {
 
 	// #ifdef ImGui
 	ImGui::Begin("window");
-	size_t sphereSize = spheres.size();
-	for (size_t i = 0; i < sphereSize; ++i) {
-		std::string label1 = "Sphere[" + std::to_string(i) + "].center";
-		std::string label2 = "Sphere[" + std::to_string(i) + "].Radius";
+
+	ImGui::PushID("spheres");
+	for (size_t i = 0; i < spheres.size(); ++i) {
+		ImGui::PushID((int)i);
+		ImGui::Text("Sphere[%zu]", i);
 
 		Vector3 sphereCenter = spheres[i].GetCenter();
 		float sphereRadius = spheres[i].GetRadius();
-		ImGui::DragFloat3(label1.c_str(), &sphereCenter.x, 0.01f);
-		ImGui::DragFloat(label2.c_str(), &sphereRadius, 0.01f);
+		ImGui::DragFloat3("Center", &sphereCenter.x, 0.01f);
+		ImGui::DragFloat("Radius", &sphereRadius, 0.01f);
 		spheres[i].SetCenter(sphereCenter);
 		spheres[i].SetRadius(sphereRadius);
+
+		ImGui::PopID();
 	}
-	size_t planeSize = planes.size();
-	for (size_t i = 0; i < planeSize; ++i) {
-		std::string label1 = "Plane[" + std::to_string(i) + "].Normal";
-		std::string label2 = "Plane[" + std::to_string(i) + "].Distance";
+	ImGui::PopID();
+
+	ImGui::PushID("planes");
+	for (size_t i = 0; i < planes.size(); ++i) {
+		ImGui::PushID((int)i);
+		ImGui::Text("plane[%zu]", i);
 
 		Vector3 planeNormal = planes[i].GetNormal();
 		float planeDistance = planes[i].GetDistance();
-		ImGui::DragFloat3(label1.c_str(), &planeNormal.x, 0.01f);
-		ImGui::DragFloat(label2.c_str(), &planeDistance, 0.01f);
-		planeNormal = Normalize(planeNormal);
+		ImGui::DragFloat3("Normal", &planeNormal.x, 0.01f);
+		ImGui::DragFloat("Distance", &planeDistance, 0.01f);
 		planes[i].SetNormal(planeNormal);
 		planes[i].SetDistance(planeDistance);
+
+		ImGui::PopID();
 	}
+	ImGui::PopID();
+
+	ImGui::PushID("segments");
+	for (size_t i = 0; i < segments.size(); ++i) {
+		ImGui::PushID((int)i);
+		ImGui::Text("segment[%zu]", i);
+
+		Vector3 segmentsOrigin = segments[i].GetOrigin();
+		Vector3 segmentsDiff = segments[i].GetDiff();
+		ImGui::DragFloat3("Origin", &segmentsOrigin.x, 0.01f);
+		ImGui::DragFloat3("Diff", &segmentsDiff.x, 0.01f);
+		segments[i].SetOrigin(segmentsOrigin);
+		segments[i].SetDiff(segmentsDiff);
+
+		ImGui::PopID();
+	}
+	ImGui::PopID();
+
 	ImGui::End();
 
 	ImGui::Begin("CameraTranslate");
@@ -115,14 +145,55 @@ void GameScene::Update(SceneManager& manager) {
 	#pragma endregion
 
 	// 1つ目の球のみ入力で移動する
-	spheres[0].UpdateToKeyMove(keys);
-
-	// 衝突判定
-	if (IsSpherePlaneCollision(spheres[0], planes[0])) {
-		spheres[0].SetColor(0xFF0000FF);
-	} else {
-		spheres[0].SetColor(0xFFFFFFFF);
+	if (!spheres.empty()) {
+		spheres[0].UpdateToKeyMove(keys);
 	}
+
+	#pragma region 衝突判定
+
+	// 球と球、球と平面の衝突判定
+	for (auto& sphere : spheres) {
+		bool isHit = false;
+
+		// 球同士
+		for (auto& other : spheres) {
+			if (&sphere == &other)
+				continue;
+
+			Vector3 diff = Subtract(sphere.GetCenter(), other.GetCenter());
+			float distance = Length(diff);
+			float radiusSum = sphere.GetRadius() + other.GetRadius();
+
+			if (distance <= radiusSum) {
+				isHit = true;
+				break;
+			}
+		}
+
+		// 平面
+		for (auto& plane : planes) {
+			if (IsSpherePlaneCollision(sphere, plane)) {
+				isHit = true;
+				break;
+			}
+		}
+
+		sphere.SetColor(isHit ? 0xFF0000FF : 0xFFFFFFFF);
+	}
+
+	// 線と平面の衝突判定
+	for (auto& segment : segments) {
+		bool isHit = false;
+		for (auto& plane : planes) {
+			if (IsSegmentPlaneCollision(segment, plane)) {
+				isHit = true;
+				break;
+			}
+		}
+		segment.SetColor(isHit ? 0xFF0000FF : 0xFFFFFFFF);
+	}
+
+	#pragma endregion
 
 	camera.Update(kWindowWidth, kWindowHeight, viewProjectionMatrix, viewportMatrix, keys);
 
@@ -131,6 +202,7 @@ void GameScene::Update(SceneManager& manager) {
 	}
 }
 
+// 描画
 void GameScene::Draw() {
 	DrawGrid(viewProjectionMatrix, viewportMatrix);
 	for (auto& sphere : spheres) {
@@ -138,6 +210,9 @@ void GameScene::Draw() {
 	}
 	for (auto& plane : planes) {
 		plane.Draw(viewProjectionMatrix, viewportMatrix);
+	}
+	for (auto& segment : segments) {
+		segment.Draw(viewProjectionMatrix, viewportMatrix);
 	}
 }
 

@@ -1,11 +1,8 @@
 #pragma once
+#include "Vector3.h"
+
 struct Matrix4x4 {
 	float m[4][4];
-};
-
-struct Segment {
-	Vector3 origin; // 始点
-	Vector3 diff;   // 終点 - 始点（方向ベクトル）
 };
 
 #pragma region
@@ -76,9 +73,6 @@ Vector3 Multiply(const Vector3& v, float s);
 
 // 正射影ベクトル
 Vector3 Project(const Vector3& v1, const Vector3& v2);
-
-// 最近接点
-Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
 
 #pragma endregion
 

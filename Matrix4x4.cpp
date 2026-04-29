@@ -1,9 +1,7 @@
-#include "Vector3.h"
 #include "Matrix4x4.h"
+#include <algorithm>
 #include <assert.h>
 #include <cmath>
-#include <utility>
-#include <algorithm>
 
 #pragma region
 
@@ -288,22 +286,6 @@ Vector3 Project(const Vector3& v1, const Vector3& v2) {
 	}
 	float t = Dot(v1, v2) / dotVV;
 	return Multiply(v2, t);
-}
-
-// 最近接点
-Vector3 ClosestPoint(const Vector3& point, const Segment& segment) {
-	Vector3 v = Subtract(point, segment.origin);
-	float dotDD = Dot(segment.diff, segment.diff);
-	if (dotDD < 1e-6f) {
-		return segment.origin; // diff がゼロベクトルの場合
-	}
-
-	float t = Dot(v, segment.diff) / dotDD;
-
-	// 線分なので 0～1 にクランプ
-	t = std::clamp(t, 0.0f, 1.0f);
-
-	return {segment.origin.x + segment.diff.x * t, segment.origin.y + segment.diff.y * t, segment.origin.z + segment.diff.z * t};
 }
 
 #pragma endregion

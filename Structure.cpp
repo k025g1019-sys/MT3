@@ -1,9 +1,11 @@
 #define _USE_MATH_DEFINES
 #include "Structure.h"
 #include "Matrix4x4.h"
-#include "Vector3.h"
 #include <Novice.h>
+#include <algorithm>
+#include <cassert>
 #include <cmath>
+#include <vector>
 
 #pragma region Sphere
 
@@ -27,7 +29,7 @@ void Sphere::UpdateToKeyMove(const char* keys) {
 
 // 球を描画する
 void Sphere::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
-	const uint32_t kSubdivision = 16;                                 // 分割数
+	const uint32_t kSubdivision = 12;                                 // 分割数
 	const float kLonEvery = 2.0f * float(M_PI) / float(kSubdivision); // 経度分割1つ分の角度
 	const float kLatEvery = float(M_PI) / float(kSubdivision);        // 緯度分割1つ分の角度
 	// 緯度の方向に分割 -π/2 ~ π/2
@@ -62,19 +64,32 @@ void Sphere::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewpo
 
 #pragma region Plane
 
+Plane::Plane(const PlaneDesc& desc) : normal_(desc.normal), distance_(desc.distance) {
+	float len = Length(desc.normal);
+	if (len < 0.0001f) {
+		normal_ = {0.0f, 1.0f, 0.0f};
+	} else {
+		normal_.x = desc.normal.x / len;
+		normal_.y = desc.normal.y / len;
+		normal_.z = desc.normal.z / len;
+	}
+}
+
 Vector3 Plane::Perpendicular(const Vector3& vector) const {
-	if (vector.x != 0.0f || vector.y != 0.0f) {
+	if (fabs(vector.x) > fabs(vector.y)) {
 		return {-vector.y, vector.x, 0.0f};
 	}
 	return {0.0f, -vector.z, vector.y};
 }
 
+void Plane::SetNormal(const Vector3& p) { normal_ = Normalize(p); } // 正規化する
+
 void Plane::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
-	Vector3 center = Multiply(distance, normal);
+	Vector3 center = Multiply(distance_, normal_);
 	Vector3 perpendiculars[4];
-	perpendiculars[0] = Normalize(Perpendicular(normal));
+	perpendiculars[0] = Normalize(Perpendicular(normal_));
 	perpendiculars[1] = {-perpendiculars[0].x, -perpendiculars[0].y, -perpendiculars[0].z};
-	perpendiculars[2] = Cross(normal, perpendiculars[0]);
+	perpendiculars[2] = Normalize(Cross(normal_, perpendiculars[0]));
 	perpendiculars[3] = {-perpendiculars[2].x, -perpendiculars[2].y, -perpendiculars[2].z};
 	Vector3 points[4];
 	for (int32_t index = 0; index < 4; ++index) {
@@ -90,23 +105,35 @@ void Plane::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewpor
 
 #pragma endregion
 
-#pragma region ScreenPrintf関数
+#pragma region Segment
 
-static const int kRowHeight = 20;
-static const int kColumnWidth = 60;
-void VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label) {
-	Novice::ScreenPrintf(x, y, "%.02f", vector.x);
-	Novice::ScreenPrintf(x + kColumnWidth, y, "%.02f", vector.y);
-	Novice::ScreenPrintf(x + kColumnWidth * 2, y, "%.02f", vector.z);
-	Novice::ScreenPrintf(x + kColumnWidth * 3, y, "%s", label);
-}
-void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label) {
-	Novice::ScreenPrintf(x, y, "%s", label);
-	for (int row = 0; row < 4; ++row) {
-		for (int column = 0; column < 4; ++column) {
-			Novice::ScreenPrintf(x + column * kColumnWidth, y + (row + 1) * kRowHeight, "%6.02f", matrix.m[row][column]);
-		}
+// 最近接点
+Vector3 Segment::ClosestPoint(const Vector3& point, const Segment& segment) {
+	Vector3 v = Subtract(point, segment.origin_);
+	float dotDD = Dot(segment.diff_, segment.diff_);
+	if (dotDD < 1e-6f) {
+		return segment.origin_; // diff がゼロベクトルの場合
 	}
+
+	float t = Dot(v, segment.diff_) / dotDD;
+
+	// 線分なので 0～1 にクランプ
+	t = std::clamp(t, 0.0f, 1.0f);
+
+	return {segment.origin_.x + segment.diff_.x * t, segment.origin_.y + segment.diff_.y * t, segment.origin_.z + segment.diff_.z * t};
+}
+
+void Segment::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
+
+	// 終点 = 始点 + 差分
+	Vector3 end = Add(origin_, diff_);
+
+	// ワールド → スクリーン座標
+	Vector3 originScreen = Transform(Transform(origin_, viewProjectionMatrix), viewportMatrix);
+	Vector3 endScreen = Transform(Transform(end, viewProjectionMatrix), viewportMatrix);
+
+	// 描画
+	Novice::DrawLine(static_cast<int>(originScreen.x), static_cast<int>(originScreen.y), static_cast<int>(endScreen.x), static_cast<int>(endScreen.y), color_);
 }
 
 #pragma endregion
@@ -171,6 +198,27 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 	unsigned int color = 0x00FF00FF;
 
 	Novice::DrawLine(static_cast<int>(screenStart.x), static_cast<int>(screenStart.y), static_cast<int>(screenEnd.x), static_cast<int>(screenEnd.y), color);
+}
+
+#pragma endregion
+
+#pragma region ScreenPrintf関数
+
+static const int kRowHeight = 20;
+static const int kColumnWidth = 60;
+void VectorScreenPrintf(int x, int y, const Vector3& vector, const char* label) {
+	Novice::ScreenPrintf(x, y, "%.02f", vector.x);
+	Novice::ScreenPrintf(x + kColumnWidth, y, "%.02f", vector.y);
+	Novice::ScreenPrintf(x + kColumnWidth * 2, y, "%.02f", vector.z);
+	Novice::ScreenPrintf(x + kColumnWidth * 3, y, "%s", label);
+}
+void MatrixScreenPrintf(int x, int y, const Matrix4x4& matrix, const char* label) {
+	Novice::ScreenPrintf(x, y, "%s", label);
+	for (int row = 0; row < 4; ++row) {
+		for (int column = 0; column < 4; ++column) {
+			Novice::ScreenPrintf(x + column * kColumnWidth, y + (row + 1) * kRowHeight, "%6.02f", matrix.m[row][column]);
+		}
+	}
 }
 
 #pragma endregion

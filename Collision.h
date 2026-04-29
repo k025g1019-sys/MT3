@@ -1,4 +1,5 @@
 #pragma once
+#include "Structure.h"
 
 // 2点間の距離を求める
 float Length(const Vector3& center1, const Vector3& center2);
@@ -8,3 +9,6 @@ bool IsSphereSphereCollision(const Sphere& s1, const Sphere& s2);
 
 // 球と平面の衝突判定
 bool IsSpherePlaneCollision(const Sphere& sphere, const Plane& plane);
+
+// 線と平面の衝突判定
+bool IsSegmentPlaneCollision(const Segment& segment, const Plane& plane);

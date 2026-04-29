@@ -1,8 +1,11 @@
 #pragma once
 #include "Camera.h"
 #include "Matrix4x4.h"
-#include "Structure.h"
 #include <vector>
+
+class Sphere;
+class Plane;
+class Segment;
 
 const int kWindowWidth = 1280;
 const int kWindowHeight = 720;
@@ -53,6 +56,7 @@ private:
 	Camera camera;
 	std::vector<Sphere> spheres;
 	std::vector<Plane> planes;
+	std::vector<Segment> segments;
 
 	Matrix4x4 viewProjectionMatrix = MakeIdentity4x4();
 	Matrix4x4 viewportMatrix = MakeIdentity4x4();
