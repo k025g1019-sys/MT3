@@ -24,3 +24,6 @@ bool IsTriangleSegmentCollision(const Triangle& triangle, const Segment& segment
 
 // AABB衝突判定
 bool IsAABBCollision(const AABB& a, const AABB& b);
+
+// AABBとSphereの衝突判定
+bool IsAABBSphereCollision(const AABB& aabb, const Sphere& sphere);
