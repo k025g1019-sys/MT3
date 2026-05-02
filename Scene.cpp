@@ -70,16 +70,16 @@ GameScene::GameScene() {
 	};
 
 	segments = {
-	    Segment({-0.0f, 0.5f, -1.0f}, {0.0f, 0.5f, 0.2f}),
+	    // Segment({-0.0f, 0.5f, -1.0f}, {0.0f, 0.5f, 0.2f}),
 	};
 
 	triangles = {
-	    Triangle(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f), Vector3(1.0f, 0.0f, 0.0f)),
+	    // Triangle(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f), Vector3(1.0f, 0.0f, 0.0f)),
 	};
 
 	aabbs = {
-	    // AABB({-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}),
-	    // AABB({0.2f, 0.2f, 0.2f}, {1.0f, 1.0f, 1.0f}),
+	    AABB({-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}),
+	    AABB({0.2f, 0.2f, 0.2f}, {1.0f, 1.0f, 1.0f}),
 	};
 
 	viewProjectionMatrix = MakePerspectiveFovMatrix(0.50f, 1280.0f / 720.0f, 0.1f, 2000.0f);

@@ -19,17 +19,22 @@ void AABB::Update() {
 
 void AABB::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
 
+	AABB world = GetWorldAABB();
+
+	Vector3 min = world.GetMin();
+	Vector3 max = world.GetMax();
+
 	// 8頂点（AABBローカル）
 	Vector3 v[8] = {
-	    {min_.x + position_.x, min_.y + position_.y, min_.z + position_.z},
-        {max_.x + position_.x, min_.y + position_.y, min_.z + position_.z},
-	    {min_.x + position_.x, max_.y + position_.y, min_.z + position_.z},
-        {max_.x + position_.x, max_.y + position_.y, min_.z + position_.z},
+	    {min.x, min.y, min.z},
+        {max.x, min.y, min.z},
+        {min.x, max.y, min.z},
+        {max.x, max.y, min.z},
 
-	    {min_.x + position_.x, min_.y + position_.y, max_.z + position_.z},
-        {max_.x + position_.x, min_.y + position_.y, max_.z + position_.z},
-	    {min_.x + position_.x, max_.y + position_.y, max_.z + position_.z},
-        {max_.x + position_.x, max_.y + position_.y, max_.z + position_.z},
+	    {min.x, min.y, max.z},
+        {max.x, min.y, max.z},
+        {min.x, max.y, max.z},
+        {max.x, max.y, max.z},
 	};
 
 	// v' = v * M
