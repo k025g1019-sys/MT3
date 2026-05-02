@@ -2,9 +2,9 @@
 #include "Matrix4x4.h"
 #include <Novice.h>
 #include "Camera.h"
-//#ifdef ImGui
+#ifdef _DEBUG
 #include <imgui.h>
-//#endif
+#endif
 
 void Camera::Update(const int kWindowWidth, const int kWindowHeight, Matrix4x4& viewProjectionMatrix, Matrix4x4& viewportMatrix, const char* keys) {
 

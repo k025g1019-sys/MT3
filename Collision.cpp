@@ -1,19 +1,29 @@
 #include "Collision.h"
+#include "AABB.h"
 #include "Matrix4x4.h"
+#include "Plane.h"
+#include "Segment.h"
+#include "Sphere.h"
+#include "Triangle.h"
 #include <cmath>
 
+#pragma region Length
 // 2点間の距離を求める
 float Length(const Vector3& center1, const Vector3& center2) {
 	return std::sqrt((center2.x - center1.x) * (center2.x - center1.x) + (center2.y - center1.y) * (center2.y - center1.y) + (center2.z - center1.z) * (center2.z - center1.z));
 }
+#pragma endregion
 
+#pragma region Sphere Sphere
 // 球同士の当たり判定
 bool IsSphereSphereCollision(const Sphere& s1, const Sphere& s2) {
 	// 2つの球の中心点間の距離を求める
 	double distance = Length(s1.GetCenter(), s2.GetCenter());
 	return distance <= s1.GetRadius() + s2.GetRadius();
 }
+#pragma endregion
 
+#pragma region Sphere Plane
 // 球と平面の衝突判定
 bool IsSpherePlaneCollision(const Sphere& sphere, const Plane& plane) {
 	Vector3 center = sphere.GetCenter();
@@ -34,7 +44,9 @@ bool IsSpherePlaneCollision(const Sphere& sphere, const Plane& plane) {
 
 	return distance <= sphere.GetRadius();
 }
+#pragma endregion
 
+#pragma region Segment Plane
 // 線と平面の衝突判定
 bool IsSegmentPlaneCollision(const Segment& segment, const Plane& plane) {
 
@@ -56,3 +68,70 @@ bool IsSegmentPlaneCollision(const Segment& segment, const Plane& plane) {
 
 	return false;
 }
+#pragma endregion
+
+#pragma region Triangle Segment
+// 三角形と線の衝突判定
+bool IsTriangleSegmentCollision(const Triangle& triangle, const Segment& segment) {
+
+	const Vector3* v = triangle.GetVertices();
+
+	// 三角形の頂点
+	Vector3 v0 = v[0];
+	Vector3 v1 = v[1];
+	Vector3 v2 = v[2];
+
+	// 辺ベクトル
+	Vector3 edge1 = Subtract(v1, v0);
+	Vector3 edge2 = Subtract(v2, v0);
+
+	// 法線
+	Vector3 normal = Normalize(Cross(edge1, edge2));
+
+	// 平面との交差チェック
+	float denom = Dot(normal, segment.GetDiff());
+
+	// 平行なら交差しない
+	if (std::abs(denom) < 1e-6f) {
+		return false;
+	}
+
+	// tを求める
+	float t = Dot(Subtract(v0, segment.GetOrigin()), normal) / denom;
+
+	// 線分範囲外
+	if (t < 0.0f || t > 1.0f) {
+		return false;
+	}
+
+	// 交点
+	Vector3 p = Add(segment.GetOrigin(), Multiply(t, segment.GetDiff()));
+
+
+	// 各辺を結んだベクトルと、頂点と衝突点pを結んだベクトルのクロス積を取る
+	Vector3 cross01 = Cross(Subtract(v1, v0), Subtract(p, v0));
+	Vector3 cross12 = Cross(Subtract(v2, v1), Subtract(p, v1));
+	Vector3 cross20 = Cross(Subtract(v0, v2), Subtract(p, v2));
+
+	// すべての小三角形のクロス積と法線が同じ方向を向いていたら衝突
+	if (Dot(cross01, normal) >= 0.0f && Dot(cross12, normal) >= 0.0f && Dot(cross20, normal) >= 0.0f) {
+		// 街突
+		return true;
+	}
+
+	return false;
+}
+#pragma endregion
+
+#pragma region AABB
+// AABB衝突判定
+bool IsAABBCollision(const AABB& a, const AABB& b) {
+
+	// 各軸で重なっているか判定
+	bool overlapX = (a.GetMin().x <= b.GetMax().x) && (a.GetMax().x >= b.GetMin().x);
+	bool overlapY = (a.GetMin().y <= b.GetMax().y) && (a.GetMax().y >= b.GetMin().y);
+	bool overlapZ = (a.GetMin().z <= b.GetMax().z) && (a.GetMax().z >= b.GetMin().z);
+
+	return overlapX && overlapY && overlapZ;
+}
+#pragma endregion

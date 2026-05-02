@@ -1,11 +1,14 @@
 #pragma once
 #include "Camera.h"
 #include "Matrix4x4.h"
+#include <memory>
 #include <vector>
 
 class Sphere;
 class Plane;
 class Segment;
+class Triangle;
+class AABB;
 
 const int kWindowWidth = 1280;
 const int kWindowHeight = 720;
@@ -23,16 +26,17 @@ public:
 // SceneManager
 class SceneManager {
 private:
-	Scene* current = nullptr;
-	Scene* next = nullptr;
+	std::unique_ptr<Scene> current;
+	std::unique_ptr<Scene> next;
 
 public:
 	~SceneManager();
-	void SetScene(Scene* scene);
+	void SetScene(std::unique_ptr<Scene> scene);
 	void Update();
 	void Draw();
 };
 
+#pragma region TitleScene
 // Title
 class TitleScene : public Scene {
 public:
@@ -44,7 +48,9 @@ private:
 	char keys[256]{};
 	char preKeys[256]{};
 };
+#pragma endregion
 
+#pragma region GameScene
 // Game
 class GameScene : public Scene {
 public:
@@ -57,6 +63,8 @@ private:
 	std::vector<Sphere> spheres;
 	std::vector<Plane> planes;
 	std::vector<Segment> segments;
+	std::vector<Triangle> triangles;
+	std::vector<AABB> aabbs;
 
 	Matrix4x4 viewProjectionMatrix = MakeIdentity4x4();
 	Matrix4x4 viewportMatrix = MakeIdentity4x4();
@@ -64,3 +72,4 @@ private:
 	char keys[256]{};
 	char preKeys[256]{};
 };
+#pragma endregion
