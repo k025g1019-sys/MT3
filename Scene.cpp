@@ -61,7 +61,7 @@ void TitleScene::Draw() {}
 GameScene::GameScene() {
 
 	spheres = {
-	    // Sphere({0.12f, 0.0f, 0.0f}, 0.6f),
+	    Sphere({0.12f, 0.0f, 0.0f}, 0.6f),
 	    // Sphere({0.8f, 0.0f, 1.0f}, 0.4f),
 	};
 
@@ -79,7 +79,7 @@ GameScene::GameScene() {
 
 	aabbs = {
 	    AABB({-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, 0.0f}),
-	    AABB({0.2f, 0.2f, 0.2f}, {1.0f, 1.0f, 1.0f}),
+	    // AABB({0.2f, 0.2f, 0.2f}, {1.0f, 1.0f, 1.0f}),
 	};
 
 	viewProjectionMatrix = MakePerspectiveFovMatrix(0.50f, 1280.0f / 720.0f, 0.1f, 2000.0f);
@@ -124,7 +124,7 @@ void GameScene::Update(SceneManager& manager) {
 			}
 		}
 
-		// 平面
+		// 平面との判定
 		for (auto& plane : planes) {
 			if (IsSpherePlaneCollision(sphere, plane)) {
 				isHit = true;
@@ -158,10 +158,11 @@ void GameScene::Update(SceneManager& manager) {
 		segment.SetColor(isHit ? 0xFF0000FF : 0xFFFFFFFF);
 	}
 
-	// AABB衝突判定
+	// AABB同士、AABBと球の衝突判定
 	for (auto& aabb : aabbs) {
 		bool isHit = false;
 
+		// AABB同士
 		for (auto& other : aabbs) {
 			if (&aabb == &other)
 				continue;
@@ -175,6 +176,15 @@ void GameScene::Update(SceneManager& manager) {
 				break;
 			}
 		}
+
+		// 球との判定
+		for (auto& sphere : spheres) {
+			if (IsAABBSphereCollision(aabb, sphere)) {
+				isHit = true;
+				break;
+			}
+		}
+
 		aabb.SetColor(isHit ? 0xFF0000FF : 0xFFFFFFFF);
 	}
 
