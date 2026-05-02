@@ -5,6 +5,7 @@
 #include "Segment.h"
 #include "Sphere.h"
 #include "Triangle.h"
+#include <algorithm>
 #include <cmath>
 
 #pragma region Length
@@ -107,7 +108,6 @@ bool IsTriangleSegmentCollision(const Triangle& triangle, const Segment& segment
 	// 交点
 	Vector3 p = Add(segment.GetOrigin(), Multiply(t, segment.GetDiff()));
 
-
 	// 各辺を結んだベクトルと、頂点と衝突点pを結んだベクトルのクロス積を取る
 	Vector3 cross01 = Cross(Subtract(v1, v0), Subtract(p, v0));
 	Vector3 cross12 = Cross(Subtract(v2, v1), Subtract(p, v1));
@@ -123,15 +123,31 @@ bool IsTriangleSegmentCollision(const Triangle& triangle, const Segment& segment
 }
 #pragma endregion
 
-#pragma region AABB
-// AABB衝突判定
+#pragma region AABB AABB
+// AABB同士の衝突判定
 bool IsAABBCollision(const AABB& a, const AABB& b) {
-
-	// 各軸で重なっているか判定
-	bool overlapX = (a.GetMin().x <= b.GetMax().x) && (a.GetMax().x >= b.GetMin().x);
-	bool overlapY = (a.GetMin().y <= b.GetMax().y) && (a.GetMax().y >= b.GetMin().y);
-	bool overlapZ = (a.GetMin().z <= b.GetMax().z) && (a.GetMax().z >= b.GetMin().z);
-
-	return overlapX && overlapY && overlapZ;
+	return (
+	    (a.GetMin().x <= b.GetMax().x && a.GetMax().x >= b.GetMin().x) &&
+		(a.GetMin().y <= b.GetMax().y && a.GetMax().y >= b.GetMin().y) &&
+	    (a.GetMin().z <= b.GetMax().z && a.GetMax().z >= b.GetMin().z));
 }
+#pragma endregion
+
+#pragma region AABB Sphere
+// AABBとSphereの衝突判定
+bool IsAABBSphereCollision(const AABB& aabb, const Sphere& sphere) {
+	// 球
+	const Vector3& center = sphere.GetCenter();
+	// 最近接点を求める
+	Vector3 closestPoint{
+		std::clamp(center.x, aabb.GetMin().x, aabb.GetMax().x),
+		std::clamp(center.y, aabb.GetMin().y, aabb.GetMax().y),
+		std::clamp(center.z, aabb.GetMin().z, aabb.GetMax().z)
+	};
+	// 最近接点と球の中心との距離を求める
+	float distance = Length(closestPoint - sphere.GetCenter());
+	// 距離が半径よりも小さければ衝突
+	return (distance <= sphere.GetRadius());
+}
+
 #pragma endregion
