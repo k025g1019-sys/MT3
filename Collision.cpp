@@ -151,3 +151,58 @@ bool IsAABBSphereCollision(const AABB& aabb, const Sphere& sphere) {
 }
 
 #pragma endregion
+
+#pragma region AABB Segment
+
+// AABBとSegmentの衝突判定
+bool IsAABBSegmentCollision(const AABB& aabb, const Segment& segment) {
+
+	// 線分の始点と終点
+	Vector3 p0 = segment.GetOrigin();
+	Vector3 d = segment.GetDiff();
+
+	float tmin = 0.0f;
+	float tmax = 1.0f;
+
+	Vector3 min = aabb.GetMin();
+	Vector3 max = aabb.GetMax();
+
+	// 各軸ごとに処理
+	for (int i = 0; i < 3; i++) {
+
+		float start = (&p0.x)[i];
+		float dir = (&d.x)[i];
+
+		float minB = (&min.x)[i];
+		float maxB = (&max.x)[i];
+
+		if (fabs(dir) < 1e-6f) {
+
+			// 線分がこの軸に平行
+			if (start < minB || start > maxB) {
+				return false; // AABB外 → 衝突しない
+			}
+		} else {
+			float t1 = (minB - start) / dir;
+			float t2 = (maxB - start) / dir;
+
+			// 入れ替え（tNear / tFar）
+			float tNear = std::min(t1, t2);
+			float tFar = std::max(t1, t2);
+
+			// AABBとの衝突点(貫通点)のtが小さい方
+			tmin = std::max(tmin, tNear);
+			// AABBとの衝突点(貫通点)のtが大きい方
+			tmax = std::min(tmax, tFar);
+
+			if (tmin > tmax) {
+				return false; // 交差しない
+			}
+		}
+	}
+
+	// [0,1] 区間で交差していれば線分と衝突
+	return true;
+}
+
+#pragma endregion

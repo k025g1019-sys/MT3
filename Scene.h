@@ -1,14 +1,8 @@
 #pragma once
 #include "Camera.h"
 #include "Matrix4x4.h"
+#include "Objects.h"
 #include <memory>
-#include <vector>
-
-class Sphere;
-class Plane;
-class Segment;
-class Triangle;
-class AABB;
 
 const int kWindowWidth = 1280;
 const int kWindowHeight = 720;
@@ -60,11 +54,7 @@ public:
 
 private:
 	Camera camera;
-	std::vector<Sphere> spheres;
-	std::vector<Plane> planes;
-	std::vector<Segment> segments;
-	std::vector<Triangle> triangles;
-	std::vector<AABB> aabbs;
+	Objects *objects;
 
 	Matrix4x4 viewProjectionMatrix = MakeIdentity4x4();
 	Matrix4x4 viewportMatrix = MakeIdentity4x4();
