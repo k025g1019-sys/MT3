@@ -50,6 +50,9 @@
     <ClCompile Include="Triangle.cpp">
       <Filter>KamataEngine\Source</Filter>
     </ClCompile>
+    <ClCompile Include="Objects.cpp">
+      <Filter>KamataEngine\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\KamataEngine\DirectXGame\audio\Audio.h">
@@ -160,6 +163,9 @@
       <Filter>KamataEngine\Source</Filter>
     </ClInclude>
     <ClInclude Include="Triangle.h">
+      <Filter>KamataEngine\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects.h">
       <Filter>KamataEngine\Source</Filter>
     </ClInclude>
   </ItemGroup>
