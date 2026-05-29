@@ -14,27 +14,24 @@ void AABB::Normalize() {
 }
 
 void AABB::Update() {
-	//Normalize();
+	Normalize();
 }
 
 void AABB::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
 
 	AABB world = GetWorldAABB();
 
-	Vector3 min = world.GetMin();
-	Vector3 max = world.GetMax();
-
-	// 8頂点（AABBローカル）
+	// 8頂点（ワールド座標）
 	Vector3 v[8] = {
-	    {min.x, min.y, min.z},
-        {max.x, min.y, min.z},
-        {min.x, max.y, min.z},
-        {max.x, max.y, min.z},
+	    {world.min_.x, world.min_.y, world.min_.z},
+        {world.max_.x, world.min_.y, world.min_.z},
+        {world.min_.x, world.max_.y, world.min_.z},
+        {world.max_.x, world.max_.y, world.min_.z},
 
-	    {min.x, min.y, max.z},
-        {max.x, min.y, max.z},
-        {min.x, max.y, max.z},
-        {max.x, max.y, max.z},
+	    {world.min_.x, world.min_.y, world.max_.z},
+        {world.max_.x, world.min_.y, world.max_.z},
+        {world.min_.x, world.max_.y, world.max_.z},
+        {world.max_.x, world.max_.y, world.max_.z},
 	};
 
 	// v' = v * M
@@ -68,6 +65,8 @@ void AABB::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewport
 #ifdef _DEBUG
 #include <imgui.h>
 void AABB::DrawImGui() {
+	ImGui::DragFloat3("Position", &position_.x, 0.01f);
+	ImGui::Separator();
 	ImGui::DragFloat3("Min", &min_.x, 0.01f);
 	ImGui::DragFloat3("Max", &max_.x, 0.01f);
 	ImGui::Separator();

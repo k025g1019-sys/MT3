@@ -1,5 +1,6 @@
 #include "Objects.h"
 #include "AABB.h"
+#include "OBB.h"
 #include "Collision.h"
 #include "Matrix4x4.h"
 #include "Plane.h"
@@ -12,25 +13,32 @@
 
 Objects::Objects() {
 	spheres = {
-	    // Sphere({0.12f, 0.0f, 0.0f}, 0.6f),
-	    // Sphere({0.8f, 0.0f, 1.0f}, 0.4f),
+	    Sphere({0.0f, 0.0f, 0.0f}, 0.5f),
+	    //Sphere({0.8f, 0.0f, 1.0f}, 0.4f),
 	};
 
 	planes = {
-	    // Plane({0.0f, 1.0f, 0.0f}, 1.5f),
+	    //Plane({0.0f, 1.0f, 0.0f}, 1.5f),
 	};
 
 	segments = {
-	    Segment({-0.7f, 0.3f, 0.0f}, {2.0f, -0.5f, 0.0f}),
+	    //Segment({-0.7f, 0.3f, 0.0f}, {2.0f, -0.5f, 0.0f}),
 	};
 
 	triangles = {
-	    // Triangle(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f), Vector3(1.0f, 0.0f, 0.0f)),
+	    //Triangle(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f), Vector3(1.0f, 0.0f, 0.0f)),
 	};
 
 	aabbs = {
-	    AABB({-0.5f, -0.5f, -0.5f}, {0.5f, 0.5f, 0.5f}),
-	    // AABB({0.2f, 0.2f, 0.2f}, {1.0f, 1.0f, 1.0f}),
+	    //AABB({-0.5f, -0.5f, -0.5f}, {0.5f, 0.5f, 0.5f}),
+	    //AABB({0.2f, 0.2f, 0.2f}, {1.0f, 1.0f, 1.0f}),
+	};
+
+	obbs = {
+	    OBB({-1.0f, 0.0f, 0.0f},
+        {{{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}},
+        {0.5f, 0.5f, 0.5f}
+        ),
 	};
 }
 
@@ -145,9 +153,11 @@ void Objects::UpdateCollisionAABBSphere() {
 	for (auto& aabb : aabbs) {
 		bool isHit = false;
 
+		AABB worldAABB = aabb.GetWorldAABB();
+
 		// 球との判定
 		for (auto& sphere : spheres) {
-			if (IsAABBSphereCollision(aabb, sphere)) {
+			if (IsAABBSphereCollision(worldAABB, sphere)) {
 				isHit = true;
 				break;
 			}
@@ -164,9 +174,11 @@ void Objects::UpdateCollisionAABBSegment() {
 	for (auto& aabb : aabbs) {
 		bool isHit = false;
 
+		AABB worldAABB = aabb.GetWorldAABB();
+
 		// 線との判定
 		for (auto& segment : segments) {
-			if (IsAABBSegmentCollision(aabb, segment)) {
+			if (IsAABBSegmentCollision(worldAABB, segment)) {
 				isHit = true;
 				break;
 			}
@@ -177,9 +189,34 @@ void Objects::UpdateCollisionAABBSegment() {
 }
 #pragma endregion
 
+#pragma region OBBSphere
+// OBBと球の衝突判定
+void Objects::UpdateCollisionOBBSphere() {
+	for (auto& obb : obbs) {
+		bool isHit = false;
+
+		// 球との判定
+		for (auto& sphere : spheres) {
+			if (IsOBBSphereCollision(obb, sphere)) {
+				isHit = true;
+				break;
+			}
+		}
+
+		obb.SetColor(isHit ? 0xFF0000FF : 0xFFFFFFFF);
+	}
+}
+#pragma endregion
+
 #pragma endregion
 
 void Objects::UpdateAllCollisions() {
+	for (auto& aabb : aabbs) {
+		aabb.Update();
+	}
+	for (auto& obb : obbs) {
+		obb.Update();
+	}
 	// All Collisions
 	UpdateCollisionSphereSphere();
 	UpdateCollisionSpherePlane();
@@ -188,6 +225,7 @@ void Objects::UpdateAllCollisions() {
 	UpdateCollisionAABBs();
 	UpdateCollisionAABBSphere();
 	UpdateCollisionAABBSegment();
+	UpdateCollisionOBBSphere();
 }
 
 #pragma region Draw
@@ -206,6 +244,9 @@ void Objects::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewp
 	}
 	for (auto& aabb : aabbs) {
 		aabb.Draw(viewProjectionMatrix, viewportMatrix);
+	}
+	for (auto& obb : obbs) {
+		obb.Draw(viewProjectionMatrix, viewportMatrix);
 	}
 }
 #pragma endregion
@@ -284,6 +325,21 @@ void Objects::DrawImgui() {
 
 			ImGui::Text("AABB[%zu]", i);
 			aabbs[i].DrawImGui();
+
+			ImGui::PopID();
+		}
+		ImGui::TreePop();
+	}
+#pragma endregion
+
+#pragma region OBB
+	// ---- OBB ----
+	if (ImGui::TreeNode("OBBs")) {
+		for (size_t i = 0; i < obbs.size(); ++i) {
+			ImGui::PushID((int)i);
+
+			ImGui::Text("OBB[%zu]", i);
+			obbs[i].DrawImGui();
 
 			ImGui::PopID();
 		}

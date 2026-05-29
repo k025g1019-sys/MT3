@@ -6,8 +6,9 @@ struct Matrix4x4;
 #pragma region AABB
 
 /// <summary>
-/// 線
+/// AABB
 /// </summary>
+/// <param name="Vector3  position">位置</param>
 /// <param name="Vector3  min">最小点</param>
 /// <param name="Vector3  max">最大点</param>
 class AABB {
@@ -24,15 +25,20 @@ public:
 
 	void Normalize();
 
-	const Vector3 GetMin() const { return min_; }
-	const Vector3 GetMax() const { return max_; }
+	const Vector3& GetMin() const { return min_; }
+	const Vector3& GetMax() const { return max_; }
+
+	const Vector3& GetPosition() const { return position_; }
+
+	void SetPosition(const Vector3& position) { position_ = position; }
+
 	AABB GetWorldAABB() const {
     return AABB(
         min_ + position_,
         max_ + position_,
         color_
     );
-}
+	}
 
 	void SetMin(Vector3 p) {
 		min_ = p;
