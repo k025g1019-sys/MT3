@@ -1,5 +1,6 @@
 #include "Collision.h"
 #include "AABB.h"
+#include "OBB.h"
 #include "Matrix4x4.h"
 #include "Plane.h"
 #include "Segment.h"
@@ -203,6 +204,45 @@ bool IsAABBSegmentCollision(const AABB& aabb, const Segment& segment) {
 
 	// [0,1] 区間で交差していれば線分と衝突
 	return true;
+}
+
+#pragma endregion
+
+#pragma region OBB Sphere
+
+bool IsOBBSphereCollision(const OBB& obb, const Sphere& sphere) {
+	const Vector3& c = sphere.GetCenter();
+
+	// OBB中心 → 球中心ベクトル
+	Vector3 d = Subtract(c, obb.GetCenter());
+
+	Vector3 closest = obb.GetCenter();
+
+	const auto& axis = obb.GetOrientations();
+	const Vector3& half = obb.GetSize();
+
+	// 各ローカル軸方向に射影してクランプ
+	for (int i = 0; i < 3; i++) {
+
+		float dist = Dot(d, axis[i]); // 軸方向成分
+
+		// 半サイズで制限
+		if (dist > half[i])
+			dist = half[i];
+		if (dist < -half[i])
+			dist = -half[i];
+
+		closest = Add(closest, Multiply(dist, axis[i]));
+	}
+
+	// 最近接点 → 球中心の距離
+	Vector3 diff = Subtract(c, closest);
+
+	float distSq = Dot(diff, diff);
+
+	float r = sphere.GetRadius();
+
+	return distSq <= r * r;
 }
 
 #pragma endregion

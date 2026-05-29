@@ -14,22 +14,24 @@ void AABB::Normalize() {
 }
 
 void AABB::Update() {
-	//Normalize();
+	Normalize();
 }
 
 void AABB::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
 
-	// 8頂点（AABBローカル）
-	Vector3 v[8] = {
-	    {min_.x + position_.x, min_.y + position_.y, min_.z + position_.z},
-        {max_.x + position_.x, min_.y + position_.y, min_.z + position_.z},
-	    {min_.x + position_.x, max_.y + position_.y, min_.z + position_.z},
-        {max_.x + position_.x, max_.y + position_.y, min_.z + position_.z},
+	AABB world = GetWorldAABB();
 
-	    {min_.x + position_.x, min_.y + position_.y, max_.z + position_.z},
-        {max_.x + position_.x, min_.y + position_.y, max_.z + position_.z},
-	    {min_.x + position_.x, max_.y + position_.y, max_.z + position_.z},
-        {max_.x + position_.x, max_.y + position_.y, max_.z + position_.z},
+	// 8頂点（ワールド座標）
+	Vector3 v[8] = {
+	    {world.min_.x, world.min_.y, world.min_.z},
+        {world.max_.x, world.min_.y, world.min_.z},
+        {world.min_.x, world.max_.y, world.min_.z},
+        {world.max_.x, world.max_.y, world.min_.z},
+
+	    {world.min_.x, world.min_.y, world.max_.z},
+        {world.max_.x, world.min_.y, world.max_.z},
+        {world.min_.x, world.max_.y, world.max_.z},
+        {world.max_.x, world.max_.y, world.max_.z},
 	};
 
 	// v' = v * M
@@ -63,6 +65,8 @@ void AABB::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewport
 #ifdef _DEBUG
 #include <imgui.h>
 void AABB::DrawImGui() {
+	ImGui::DragFloat3("Position", &position_.x, 0.01f);
+	ImGui::Separator();
 	ImGui::DragFloat3("Min", &min_.x, 0.01f);
 	ImGui::DragFloat3("Max", &max_.x, 0.01f);
 	ImGui::Separator();

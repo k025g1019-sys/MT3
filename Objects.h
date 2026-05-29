@@ -7,6 +7,7 @@ class Plane;
 class Segment;
 class Triangle;
 class AABB;
+class OBB;
 
 class Objects {
 public:
@@ -19,6 +20,7 @@ public:
 	void UpdateCollisionAABBs();
 	void UpdateCollisionAABBSphere();
 	void UpdateCollisionAABBSegment();
+	void UpdateCollisionOBBSphere();
 	void Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
 #ifdef _DEBUG
 	void DrawImgui();
@@ -30,4 +32,5 @@ private:
 	std::vector<Segment> segments;
 	std::vector<Triangle> triangles;
 	std::vector<AABB> aabbs;
+	std::vector<OBB> obbs;
 };

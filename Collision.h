@@ -6,6 +6,7 @@ class Plane;
 class Segment;
 class Triangle;
 class AABB;
+class OBB;
 
 // 2点間の距離を求める
 float Length(const Vector3& center1, const Vector3& center2);
@@ -30,3 +31,6 @@ bool IsAABBSphereCollision(const AABB& aabb, const Sphere& sphere);
 
 // AABBとSegmentの衝突判定
 bool IsAABBSegmentCollision(const AABB& aabb, const Segment& segment);
+
+// OBBと球の衝突判定
+bool IsOBBSphereCollision(const OBB& obb, const Sphere& sphere);
