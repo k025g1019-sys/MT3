@@ -13,7 +13,7 @@
 
 Objects::Objects() {
 	spheres = {
-	    Sphere({0.0f, 0.0f, 0.0f}, 0.5f),
+	    //Sphere({0.0f, 0.0f, 0.0f}, 0.5f),
 	    //Sphere({0.8f, 0.0f, 1.0f}, 0.4f),
 	};
 
@@ -22,7 +22,7 @@ Objects::Objects() {
 	};
 
 	segments = {
-	    //Segment({-0.8f, 0.3f, 0.0f}, {0.5f, 0.5f, 0.5f}),
+	    Segment({-0.8f, 0.3f, 0.0f}, {0.5f, 0.5f, 0.5f}),
 	};
 
 	triangles = {
