@@ -30,9 +30,13 @@ public:
 	void SetRadius(float p) { radius_ = p; }
 	void SetColor(unsigned int p) { color_ = p; }
 
+	void SetHit(bool hit) { isHit_ = hit; }
+	bool IsHit() const { return isHit_; }
+
 private:
 	Vector3 center_; //!< 中心点
 	float radius_;   //!< 半径
+	bool isHit_ = false;
 	unsigned int color_;
 };
 

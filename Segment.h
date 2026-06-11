@@ -29,11 +29,16 @@ public:
 
 	void SetOrigin(Vector3 p) { origin_ = p; }
 	void SetDiff(Vector3 p) { diff_ = p; }
+
+	void SetHit(bool hit) { isHit_ = hit; }
+	bool IsHit() const { return isHit_; }
+
 	void SetColor(unsigned int p) { color_ = p; }
 
 private:
 	Vector3 origin_; //!< 始点
 	Vector3 diff_;   //!< 終点への差分ベクトル
+	bool isHit_ = false;
 	unsigned int color_;
 };
 

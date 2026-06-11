@@ -13,14 +13,6 @@ class Objects {
 public:
 	Objects();
 	void UpdateAllCollisions();
-	void UpdateCollisionSphereSphere();
-	void UpdateCollisionSpherePlane();
-	void UpdateCollisionSegmentPlane();
-	void UpdateCollisionSegmentTriangle();
-	void UpdateCollisionAABBs();
-	void UpdateCollisionAABBSphere();
-	void UpdateCollisionAABBSegment();
-	void UpdateCollisionOBBSphere();
 	void Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix);
 #ifdef _DEBUG
 	void DrawImgui();

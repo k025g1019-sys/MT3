@@ -246,3 +246,196 @@ bool IsOBBSphereCollision(const OBB& obb, const Sphere& sphere) {
 }
 
 #pragma endregion
+
+#pragma region OBB Segment
+
+// OBBとSegmentの衝突判定
+bool IsOBBSegmentCollision(const OBB& obb, const Segment& segment) {
+
+	// OBB情報
+	const Vector3& center = obb.GetCenter();
+	const auto& axis = obb.GetOrientations();
+	const Vector3& halfSize = obb.GetSize();
+
+	// Segment
+	Vector3 p0 = segment.GetOrigin();
+	Vector3 p1 = Add(segment.GetOrigin(), segment.GetDiff());
+
+	// OBB中心基準へ移動
+	Vector3 localP0 = Subtract(p0, center);
+	Vector3 localP1 = Subtract(p1, center);
+
+	// OBBローカル空間へ変換
+	Vector3 p0Local{Dot(localP0, axis[0]), Dot(localP0, axis[1]), Dot(localP0, axis[2])};
+
+	Vector3 p1Local{Dot(localP1, axis[0]), Dot(localP1, axis[1]), Dot(localP1, axis[2])};
+
+	// ローカル空間でのSegment
+	Segment localSegment;
+	localSegment.SetOrigin(p0Local);
+	localSegment.SetDiff(Subtract(p1Local, p0Local));
+
+	// OBB → AABB化
+	AABB localAABB;
+	localAABB.SetMin(Vector3{-halfSize.x, -halfSize.y, -halfSize.z});
+
+	localAABB.SetMax(Vector3{halfSize.x, halfSize.y, halfSize.z});
+
+	// AABB vs Segment 判定
+	return IsAABBSegmentCollision(localAABB, localSegment);
+}
+
+#pragma endregion
+
+#pragma region OBB OBB
+
+bool IsOBBCollision(const OBB& a, const OBB& b) {
+
+	const Vector3& centerA = a.GetCenter();
+	const Vector3& centerB = b.GetCenter();
+
+	const auto& axisA = a.GetOrientations();
+	const auto& axisB = b.GetOrientations();
+
+	const Vector3& halfA = a.GetSize();
+	const Vector3& halfB = b.GetSize();
+
+	constexpr float EPSILON = 1e-6f;
+
+	// 中心間ベクトル
+	Vector3 tWorld = Subtract(centerB, centerA);
+
+	// A基準へ変換
+	float t[3] = {Dot(tWorld, axisA[0]), Dot(tWorld, axisA[1]), Dot(tWorld, axisA[2])};
+
+	// 回転行列
+	float R[3][3];
+	float AbsR[3][3];
+
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			R[i][j] = Dot(axisA[i], axisB[j]);
+			AbsR[i][j] = std::fabs(R[i][j]) + EPSILON;
+		}
+	}
+
+	float ra, rb;
+
+	// =====================
+	// Aの軸 3本
+	// =====================
+	for (int i = 0; i < 3; i++) {
+
+		ra = halfA[i];
+
+		rb = halfB.x * AbsR[i][0] + halfB.y * AbsR[i][1] + halfB.z * AbsR[i][2];
+
+		if (std::fabs(t[i]) > ra + rb) {
+			return false;
+		}
+	}
+
+	// =====================
+	// Bの軸 3本
+	// =====================
+	for (int j = 0; j < 3; j++) {
+
+		ra = halfA.x * AbsR[0][j] + halfA.y * AbsR[1][j] + halfA.z * AbsR[2][j];
+
+		rb = halfB[j];
+
+		float distance = std::fabs(t[0] * R[0][j] + t[1] * R[1][j] + t[2] * R[2][j]);
+
+		if (distance > ra + rb) {
+			return false;
+		}
+	}
+
+	// =====================
+	// 外積軸 9本
+	// =====================
+
+	// A0 x B0
+	ra = halfA.y * AbsR[2][0] + halfA.z * AbsR[1][0];
+	rb = halfB.y * AbsR[0][2] + halfB.z * AbsR[0][1];
+	if (std::fabs(t[2] * R[1][0] - t[1] * R[2][0]) > ra + rb)
+		return false;
+
+	// A0 x B1
+	ra = halfA.y * AbsR[2][1] + halfA.z * AbsR[1][1];
+	rb = halfB.x * AbsR[0][2] + halfB.z * AbsR[0][0];
+	if (std::fabs(t[2] * R[1][1] - t[1] * R[2][1]) > ra + rb)
+		return false;
+
+	// A0 x B2
+	ra = halfA.y * AbsR[2][2] + halfA.z * AbsR[1][2];
+	rb = halfB.x * AbsR[0][1] + halfB.y * AbsR[0][0];
+	if (std::fabs(t[2] * R[1][2] - t[1] * R[2][2]) > ra + rb)
+		return false;
+
+	// A1 x B0
+	ra = halfA.x * AbsR[2][0] + halfA.z * AbsR[0][0];
+	rb = halfB.y * AbsR[1][2] + halfB.z * AbsR[1][1];
+	if (std::fabs(t[0] * R[2][0] - t[2] * R[0][0]) > ra + rb)
+		return false;
+
+	// A1 x B1
+	ra = halfA.x * AbsR[2][1] + halfA.z * AbsR[0][1];
+	rb = halfB.x * AbsR[1][2] + halfB.z * AbsR[1][0];
+	if (std::fabs(t[0] * R[2][1] - t[2] * R[0][1]) > ra + rb)
+		return false;
+
+	// A1 x B2
+	ra = halfA.x * AbsR[2][2] + halfA.z * AbsR[0][2];
+	rb = halfB.x * AbsR[1][1] + halfB.y * AbsR[1][0];
+	if (std::fabs(t[0] * R[2][2] - t[2] * R[0][2]) > ra + rb)
+		return false;
+
+	// A2 x B0
+	ra = halfA.x * AbsR[1][0] + halfA.y * AbsR[0][0];
+	rb = halfB.y * AbsR[2][2] + halfB.z * AbsR[2][1];
+	if (std::fabs(t[1] * R[0][0] - t[0] * R[1][0]) > ra + rb)
+		return false;
+
+	// A2 x B1
+	ra = halfA.x * AbsR[1][1] + halfA.y * AbsR[0][1];
+	rb = halfB.x * AbsR[2][2] + halfB.z * AbsR[2][0];
+	if (std::fabs(t[1] * R[0][1] - t[0] * R[1][1]) > ra + rb)
+		return false;
+
+	// A2 x B2
+	ra = halfA.x * AbsR[1][2] + halfA.y * AbsR[0][2];
+	rb = halfB.x * AbsR[2][1] + halfB.y * AbsR[2][0];
+	if (std::fabs(t[1] * R[0][2] - t[0] * R[1][2]) > ra + rb)
+		return false;
+
+	return true;
+}
+
+#pragma endregion
+
+#pragma region OBB AABB
+
+OBB ConvertAABBToOBB(const AABB& aabb) {
+	OBB result;
+
+	result.SetCenter({(aabb.GetMin().x + aabb.GetMax().x) * 0.5f, (aabb.GetMin().y + aabb.GetMax().y) * 0.5f, (aabb.GetMin().z + aabb.GetMax().z) * 0.5f});
+
+	result.SetSize({(aabb.GetMax().x - aabb.GetMin().x) * 0.5f, (aabb.GetMax().y - aabb.GetMin().y) * 0.5f, (aabb.GetMax().z - aabb.GetMin().z) * 0.5f});
+
+	Vector3 axis[3] = {
+	    {1, 0, 0},
+        {0, 1, 0},
+        {0, 0, 1}
+    };
+
+	for (int i = 0; i < 3; ++i) {
+		result.SetOrientation(i, axis[i]);
+	}
+
+	return result;
+}
+
+bool IsOBBAABBCollision(const OBB& obb, const AABB& aabb) { return IsOBBCollision(obb, ConvertAABBToOBB(aabb)); }
+
+#pragma endregion

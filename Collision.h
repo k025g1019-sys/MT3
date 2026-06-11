@@ -34,3 +34,12 @@ bool IsAABBSegmentCollision(const AABB& aabb, const Segment& segment);
 
 // OBBと球の衝突判定
 bool IsOBBSphereCollision(const OBB& obb, const Sphere& sphere);
+
+// OBBとSegmentの衝突判定
+bool IsOBBSegmentCollision(const OBB& obb, const Segment& segment);
+
+// OBB同士の衝突判定
+bool IsOBBCollision(const OBB& a, const OBB& b);
+
+// OBBとAABBの衝突判定
+bool IsOBBAABBCollision(const OBB& obb, const AABB& aabb);

@@ -32,6 +32,9 @@ public:
 
 	void SetPosition(const Vector3& position) { position_ = position; }
 
+	void SetHit(bool hit) { isHit_ = hit; }
+	bool IsHit() const { return isHit_; }
+
 	AABB GetWorldAABB() const {
     return AABB(
         min_ + position_,
@@ -59,6 +62,7 @@ private:
 	Vector3 position_{0.0f, 0.0f, 0.0f};
 	Vector3 min_{-0.5f, -0.5f, -0.5f}; //!< 最小点
 	Vector3 max_{0.0f, 0.0f, 0.0f};    //!< 最大点
+	bool isHit_ = false;
 	unsigned int color_{0xFFFFFFFF};
 };
 

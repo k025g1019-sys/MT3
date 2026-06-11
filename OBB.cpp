@@ -48,7 +48,27 @@ void OBB::Normalize() {
 	size_.z = std::abs(size_.z);
 }
 
-void OBB::Update() { Normalize(); }
+Matrix4x4 MakeRotateXYZMatrix(const Vector3& r) {
+
+	Matrix4x4 rx = MakeRotateXMatrix(r.x);
+	Matrix4x4 ry = MakeRotateYMatrix(r.y);
+	Matrix4x4 rz = MakeRotateZMatrix(r.z);
+
+	return Multiply(rx, Multiply(ry, rz));
+}
+
+void OBB::Update() {
+
+	Matrix4x4 rotateMatrix = MakeRotateXYZMatrix(rotate_);
+
+	orientations_[0] = {rotateMatrix.m[0][0], rotateMatrix.m[0][1], rotateMatrix.m[0][2]};
+
+	orientations_[1] = {rotateMatrix.m[1][0], rotateMatrix.m[1][1], rotateMatrix.m[1][2]};
+
+	orientations_[2] = {rotateMatrix.m[2][0], rotateMatrix.m[2][1], rotateMatrix.m[2][2]};
+
+	Normalize();
+}
 
 //----------------------------------------
 // 描画
@@ -121,10 +141,12 @@ void OBB::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportM
 void OBB::DrawImGui() {
 
 	ImGui::DragFloat3("Center", &center_.x, 0.01f);
+	ImGui::DragFloat3("Size", &size_.x, 0.01f);
 
 	ImGui::Separator();
 
-	ImGui::DragFloat3("Size", &size_.x, 0.01f);
+	ImGui::Text("Rotate");
+	ImGui::DragFloat3("Rotate", &rotate_.x, 0.01f);
 
 	ImGui::Separator();
 

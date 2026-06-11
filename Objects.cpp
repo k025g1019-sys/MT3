@@ -22,7 +22,7 @@ Objects::Objects() {
 	};
 
 	segments = {
-	    //Segment({-0.7f, 0.3f, 0.0f}, {2.0f, -0.5f, 0.0f}),
+	    //Segment({-0.8f, 0.3f, 0.0f}, {0.5f, 0.5f, 0.5f}),
 	};
 
 	triangles = {
@@ -36,319 +36,254 @@ Objects::Objects() {
 
 	obbs = {
 	    OBB({-1.0f, 0.0f, 0.0f},
-        {{{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}},
-        {0.5f, 0.5f, 0.5f}
-        ),
+			{0.0f, 0.0f, 0.0f},
+			{{{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}},
+			{0.5f, 0.5f, 0.5f}
+			),
+	    //OBB({0.9f, 0.66f, 0.78f},
+        //{-0.05f, -2.49f, 0.15f},
+        //{{{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}},
+        //{0.5f, 0.37f, 0.5f}
+        //),
 	};
 }
 
+#pragma region Color
+namespace {
+
+constexpr uint32_t kHitColor = 0xFF0000FF;
+constexpr uint32_t kNormalColor = 0xFFFFFFFF;
+
+} // namespace
+#pragma endregion
+
 #pragma region Collisions
 
-#pragma region SphereSphere
-// 球と球の衝突判定
-void Objects::UpdateCollisionSphereSphere() {
-	for (auto& sphere : spheres) {
-		bool isHit = false;
-
-		// 球同士
-		for (auto& other : spheres) {
-			if (&sphere == &other)
-				continue;
-
-			Vector3 diff = Subtract(sphere.GetCenter(), other.GetCenter());
-			float distance = Length(diff);
-			float radiusSum = sphere.GetRadius() + other.GetRadius();
-
-			if (distance <= radiusSum) {
-				isHit = true;
-				break;
-			}
-		}
-	}
-}
-#pragma endregion
-
-#pragma region SpherePlane
-// 球と平面の衝突判定
-void Objects::UpdateCollisionSpherePlane() {
-	for (auto& sphere : spheres) {
-		bool isHit = false;
-
-		// 平面との判定
-		for (auto& plane : planes) {
-			if (IsSpherePlaneCollision(sphere, plane)) {
-				isHit = true;
-				break;
-			}
-		}
-
-		sphere.SetColor(isHit ? 0xFF0000FF : 0xFFFFFFFF);
-	}
-}
-#pragma endregion
-
-#pragma region SegmentPlane
-// 線と平面の衝突判定
-void Objects::UpdateCollisionSegmentPlane() {
-	for (auto& segment : segments) {
-		bool isHit = false;
-
-		// 平面との判定
-		for (auto& plane : planes) {
-			if (IsSegmentPlaneCollision(segment, plane)) {
-				isHit = true;
-				break;
-			}
-		}
-	}
-}
-#pragma endregion
-
-#pragma region SegmentTriangle
-// 線と三角形の衝突判定
-void Objects::UpdateCollisionSegmentTriangle() {
-	for (auto& segment : segments) {
-		bool isHit = false;
-
-		// 三角形との判定
-		for (auto& triangle : triangles) {
-			if (IsTriangleSegmentCollision(triangle, segment)) {
-				isHit = true;
-				break;
-			}
-		}
-
-		segment.SetColor(isHit ? 0xFF0000FF : 0xFFFFFFFF);
-	}
-}
-#pragma endregion
-
-#pragma region AABBs
-// AABB同士の衝突判定
-void Objects::UpdateCollisionAABBs() {
-	for (auto& aabb : aabbs) {
-		bool isHit = false;
-
-		// AABB同士
-		for (auto& other : aabbs) {
-			if (&aabb == &other)
-				continue;
-
-			// 衝突判定
-			AABB wa = aabb.GetWorldAABB();
-			AABB wb = other.GetWorldAABB();
-
-			if (IsAABBCollision(wa, wb)) {
-				isHit = true;
-				break;
-			}
-		}
-	}
-}
-#pragma endregion
-
-#pragma region AABBSphere
-// AABBと球の衝突判定
-void Objects::UpdateCollisionAABBSphere() {
-	for (auto& aabb : aabbs) {
-		bool isHit = false;
-
-		AABB worldAABB = aabb.GetWorldAABB();
-
-		// 球との判定
-		for (auto& sphere : spheres) {
-			if (IsAABBSphereCollision(worldAABB, sphere)) {
-				isHit = true;
-				break;
-			}
-		}
-
-		aabb.SetColor(isHit ? 0xFF0000FF : 0xFFFFFFFF);
-	}
-}
-#pragma endregion
-
-#pragma region AABBSegment
-// AABBと線の衝突判定
-void Objects::UpdateCollisionAABBSegment() {
-	for (auto& aabb : aabbs) {
-		bool isHit = false;
-
-		AABB worldAABB = aabb.GetWorldAABB();
-
-		// 線との判定
-		for (auto& segment : segments) {
-			if (IsAABBSegmentCollision(worldAABB, segment)) {
-				isHit = true;
-				break;
-			}
-		}
-
-		aabb.SetColor(isHit ? 0xFF0000FF : 0xFFFFFFFF);
-	}
-}
-#pragma endregion
-
-#pragma region OBBSphere
-// OBBと球の衝突判定
-void Objects::UpdateCollisionOBBSphere() {
-	for (auto& obb : obbs) {
-		bool isHit = false;
-
-		// 球との判定
-		for (auto& sphere : spheres) {
-			if (IsOBBSphereCollision(obb, sphere)) {
-				isHit = true;
-				break;
-			}
-		}
-
-		obb.SetColor(isHit ? 0xFF0000FF : 0xFFFFFFFF);
-	}
-}
-#pragma endregion
-
-#pragma endregion
-
 void Objects::UpdateAllCollisions() {
+	for (auto& sphere : spheres) {
+		sphere.Update();
+		sphere.SetHit(false);
+	}
 	for (auto& aabb : aabbs) {
 		aabb.Update();
+		aabb.SetHit(false);
 	}
-	for (auto& obb : obbs) {
+	for (auto& obb : obbs){
 		obb.Update();
+		obb.SetHit(false);
 	}
-	// All Collisions
-	UpdateCollisionSphereSphere();
-	UpdateCollisionSpherePlane();
-	UpdateCollisionSegmentPlane();
-	UpdateCollisionSegmentTriangle();
-	UpdateCollisionAABBs();
-	UpdateCollisionAABBSphere();
-	UpdateCollisionAABBSegment();
-	UpdateCollisionOBBSphere();
+	for (auto& segment : segments) {
+		segment.SetHit(false);
+	}
+
+	///
+	/// 衝突判定
+	///
+#pragma region Sphere Sphere
+	// 球と球
+	for (size_t i = 0; i < spheres.size(); ++i) {
+		for (size_t j = i + 1; j < spheres.size(); ++j) {
+			if (IsSphereSphereCollision(spheres[i], spheres[j])) {
+				spheres[i].SetHit(true);
+				spheres[j].SetHit(true);
+			}
+		}
+	}
+#pragma endregion
+#pragma region Sphere Plane
+	// 球と平面
+	for (size_t i = 0; i < spheres.size(); ++i) {
+		for (size_t j = 0; j < planes.size(); ++j) {
+			if (IsSpherePlaneCollision(spheres[i], planes[j])) {
+				spheres[i].SetHit(true);
+			}
+		}
+	}
+#pragma endregion
+#pragma region Segment Plane
+	// 線と平面
+	for (size_t i = 0; i < segments.size(); ++i) {
+		for (size_t j = 0; j < planes.size(); ++j) {
+			if (IsSegmentPlaneCollision(segments[i], planes[j])) {
+				segments[i].SetHit(true);
+			}
+		}
+	}
+#pragma endregion
+#pragma region Segment Triangle
+	// 線と三角形
+	for (size_t i = 0; i < segments.size(); ++i) {
+		for (size_t j = 0; j < triangles.size(); ++j) {
+			if (IsTriangleSegmentCollision(triangles[j], segments[i])) {
+				segments[i].SetHit(true);
+			}
+		}
+	}
+#pragma endregion
+#pragma region AABBs
+	// AABB同士
+	for (size_t i = 0; i < aabbs.size(); ++i) {
+		for (size_t j = i + 1; j < aabbs.size(); ++j) {
+			if (IsAABBCollision(aabbs[i].GetWorldAABB(), aabbs[j].GetWorldAABB())) {
+				aabbs[i].SetHit(true);
+				aabbs[j].SetHit(true);
+			}
+		}
+	}
+#pragma endregion
+#pragma region AABB Sphere
+	// AABBと球
+	for (size_t i = 0; i < aabbs.size(); ++i) {
+		AABB world = aabbs[i].GetWorldAABB();
+		for (size_t j = 0; j < spheres.size(); ++j) {
+			if (IsAABBSphereCollision(world, spheres[j])) {
+				spheres[j].SetHit(true);
+				aabbs[i].SetHit(true);
+			}
+		}
+	}
+#pragma endregion
+#pragma region AABB Segment
+	// AABBと線
+	for (size_t i = 0; i < aabbs.size(); ++i) {
+		AABB world = aabbs[i].GetWorldAABB();
+		for (size_t j = 0; j < segments.size(); ++j) {
+			if (IsAABBSegmentCollision(world, segments[j])) {
+				aabbs[i].SetHit(true);
+				segments[j].SetHit(true);
+			}
+		}
+	}
+#pragma endregion
+#pragma region OBB Sphere
+	// OBBと球
+	for (size_t i = 0; i < obbs.size(); ++i) {
+		for (size_t j = 0; j < spheres.size(); ++j) {
+			if (IsOBBSphereCollision(obbs[i], spheres[j])) {
+				obbs[i].SetHit(true);
+				spheres[j].SetHit(true);
+			}
+		}
+	}
+#pragma endregion
+#pragma region OBB Segment
+	// OBBと線
+	for (size_t i = 0; i < obbs.size(); ++i) {
+		for (size_t j = 0; j < segments.size(); ++j) {
+			if (IsOBBSegmentCollision(obbs[i], segments[j])) {
+				obbs[i].SetHit(true);
+				segments[j].SetHit(true);
+			}
+		}
+	}
+#pragma endregion
+#pragma region OBBs
+	// OBB同士
+	for (size_t i = 0; i < obbs.size(); ++i) {
+		for (size_t j = i + 1; j < obbs.size(); ++j) {
+			if (IsOBBCollision(obbs[i], obbs[j])) {
+				obbs[i].SetHit(true);
+				obbs[j].SetHit(true);
+			}
+		}
+	}
+#pragma endregion
+#pragma region OBB AABB
+	// OBBとAABB
+	for (size_t i = 0; i < obbs.size(); ++i) {
+		for (size_t j = 0; j < aabbs.size(); ++j) {
+			AABB world = aabbs[j].GetWorldAABB();
+			if (IsOBBAABBCollision(obbs[i], world)) {
+				obbs[i].SetHit(true);
+				aabbs[j].SetHit(true);
+			}
+		}
+	}
+#pragma endregion
+
+	// 最終的に当たっていたかで色を決定する
+	for (auto& sphere : spheres) {
+		sphere.SetColor(sphere.IsHit() ? kHitColor : kNormalColor);
+	}
+
+	for (auto& aabb : aabbs) {
+		aabb.SetColor(aabb.IsHit() ? kHitColor : kNormalColor);
+	}
+
+	for (auto& obb : obbs) {
+		obb.SetColor(obb.IsHit() ? kHitColor : kNormalColor);
+	}
+
+	for (auto& segment : segments) {
+		segment.SetColor(segment.IsHit() ? kHitColor : kNormalColor);
+	}
 }
+
+#pragma endregion
 
 #pragma region Draw
 void Objects::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix) {
-	for (auto& sphere : spheres) {
-		sphere.Draw(viewProjectionMatrix, viewportMatrix);
-	}
-	for (auto& plane : planes) {
-		plane.Draw(viewProjectionMatrix, viewportMatrix);
-	}
-	for (auto& segment : segments) {
-		segment.Draw(viewProjectionMatrix, viewportMatrix);
-	}
-	for (auto& triangle : triangles) {
-		triangle.Draw(viewProjectionMatrix, viewportMatrix);
-	}
-	for (auto& aabb : aabbs) {
-		aabb.Draw(viewProjectionMatrix, viewportMatrix);
-	}
-	for (auto& obb : obbs) {
-		obb.Draw(viewProjectionMatrix, viewportMatrix);
-	}
+
+	auto drawList = [&](auto& container) {
+		for (auto& obj : container) {
+			obj.Draw(viewProjectionMatrix, viewportMatrix);
+		}
+	};
+
+	drawList(spheres);
+	drawList(planes);
+	drawList(segments);
+	drawList(triangles);
+	drawList(aabbs);
+	drawList(obbs);
 }
 #pragma endregion
 
 #ifdef _DEBUG
 
 #pragma region ImGui
+
+#pragma region ImGui Helpers
+
+namespace {
+
+template<class T> void DrawObjectTree(const char* treeName, std::vector<T>& objects, const char* labelName) {
+
+	if (ImGui::TreeNode(treeName)) {
+
+		for (size_t i = 0; i < objects.size(); ++i) {
+
+			ImGui::PushID(static_cast<int>(i));
+
+			ImGui::Text("%s[%zu]", labelName, i);
+
+			objects[i].DrawImGui();
+
+			ImGui::PopID();
+		}
+
+		ImGui::TreePop();
+	}
+}
+
+} // namespace
+
+#pragma endregion
+
 void Objects::DrawImgui() {
+
 	ImGui::Begin("window");
 
-#pragma region Sphere
-	// ---- Sphere ----
-	if (ImGui::TreeNode("Spheres")) {
-		for (size_t i = 0; i < spheres.size(); ++i) {
-			ImGui::PushID((int)i);
-
-			ImGui::Text("Sphere[%zu]", i);
-			spheres[i].DrawImGui();
-
-			ImGui::PopID();
-		}
-		ImGui::TreePop();
-	}
-#pragma endregion
-
-#pragma region Plane
-	// ---- Plane ----
-	if (ImGui::TreeNode("Planes")) {
-		for (size_t i = 0; i < planes.size(); ++i) {
-			ImGui::PushID((int)i);
-
-			ImGui::Text("Plane[%zu]", i);
-			planes[i].DrawImGui();
-
-			ImGui::PopID();
-		}
-		ImGui::TreePop();
-	}
-#pragma endregion
-
-#pragma region Segment
-	// ---- Segment ----
-	if (ImGui::TreeNode("Segments")) {
-		for (size_t i = 0; i < segments.size(); ++i) {
-			ImGui::PushID((int)i);
-
-			ImGui::Text("Segment[%zu]", i);
-			segments[i].DrawImGui();
-
-			ImGui::PopID();
-		}
-		ImGui::TreePop();
-	}
-#pragma endregion
-
-#pragma region Segment
-	// ---- Triangle ----
-	if (ImGui::TreeNode("Triangles")) {
-		for (size_t i = 0; i < triangles.size(); ++i) {
-			ImGui::PushID((int)i);
-
-			ImGui::Text("Triangle[%zu]", i);
-			triangles[i].DrawImGui();
-
-			ImGui::PopID();
-		}
-		ImGui::TreePop();
-	}
-#pragma endregion
-
-#pragma region AABB
-	// ---- AABB ----
-	if (ImGui::TreeNode("AABBs")) {
-		for (size_t i = 0; i < aabbs.size(); ++i) {
-			ImGui::PushID((int)i);
-
-			ImGui::Text("AABB[%zu]", i);
-			aabbs[i].DrawImGui();
-
-			ImGui::PopID();
-		}
-		ImGui::TreePop();
-	}
-#pragma endregion
-
-#pragma region OBB
-	// ---- OBB ----
-	if (ImGui::TreeNode("OBBs")) {
-		for (size_t i = 0; i < obbs.size(); ++i) {
-			ImGui::PushID((int)i);
-
-			ImGui::Text("OBB[%zu]", i);
-			obbs[i].DrawImGui();
-
-			ImGui::PopID();
-		}
-		ImGui::TreePop();
-	}
-#pragma endregion
+	DrawObjectTree("Spheres", spheres, "Sphere");
+	DrawObjectTree("Planes", planes, "Plane");
+	DrawObjectTree("Segments", segments, "Segment");
+	DrawObjectTree("Triangles", triangles, "Triangle");
+	DrawObjectTree("AABBs", aabbs, "AABB");
+	DrawObjectTree("OBBs", obbs, "OBB");
 
 	ImGui::End();
 }
+
 #pragma endregion
 
 #endif
