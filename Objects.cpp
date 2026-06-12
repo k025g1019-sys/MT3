@@ -1,50 +1,58 @@
 #include "Objects.h"
 #include "AABB.h"
-#include "OBB.h"
 #include "Collision.h"
 #include "Matrix4x4.h"
+#include "OBB.h"
 #include "Plane.h"
 #include "Segment.h"
 #include "Sphere.h"
 #include "Triangle.h"
+#include "Curve.h"
 #ifdef _DEBUG
 #include <imgui.h>
 #endif
 
 Objects::Objects() {
 	spheres = {
-	    Sphere({0.0f, 0.0f, 0.0f}, 0.5f),
-	    //Sphere({0.8f, 0.0f, 1.0f}, 0.4f),
+	    // Sphere({0.0f, 0.0f, 0.0f}, 0.5f),
+	    // Sphere({0.8f, 0.0f, 1.0f}, 0.4f),
 	};
 
 	planes = {
-	    //Plane({0.0f, 1.0f, 0.0f}, 1.5f),
+	    // Plane({0.0f, 1.0f, 0.0f}, 1.5f),
 	};
 
 	segments = {
-	    //Segment({-0.8f, 0.3f, 0.0f}, {0.5f, 0.5f, 0.5f}),
+	    // Segment({-0.8f, 0.3f, 0.0f}, {0.5f, 0.5f, 0.5f}),
 	};
 
 	triangles = {
-	    //Triangle(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f), Vector3(1.0f, 0.0f, 0.0f)),
+	    // Triangle(Vector3(-1.0f, 0.0f, 0.0f), Vector3(0.0f, 1.0f, 0.0f), Vector3(1.0f, 0.0f, 0.0f)),
 	};
 
 	aabbs = {
-	    //AABB({-0.5f, -0.5f, -0.5f}, {0.5f, 0.5f, 0.5f}),
-	    //AABB({0.2f, 0.2f, 0.2f}, {1.0f, 1.0f, 1.0f}),
+	    // AABB({-0.5f, -0.5f, -0.5f}, {0.5f, 0.5f, 0.5f}),
+	    // AABB({0.2f, 0.2f, 0.2f}, {1.0f, 1.0f, 1.0f}),
 	};
 
 	obbs = {
-	    OBB({-1.0f, 0.0f, 0.0f},
-			{0.0f, 0.0f, 0.0f},
-			{{{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}},
-			{0.5f, 0.5f, 0.5f}
-			),
+	    //OBB({0.0f, 0.0f, 0.0f},
+        //{0.0f, 0.0f, 0.0f},
+        //{{{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}},
+        //{0.83f, 0.26f, 0.24f}
+        //),
 	    //OBB({0.9f, 0.66f, 0.78f},
         //{-0.05f, -2.49f, 0.15f},
         //{{{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}},
         //{0.5f, 0.37f, 0.5f}
         //),
+	};
+
+	curves = {
+	    Curve({{{-0.8f, 0.58f, 1.0f}, {1.76f, 1.0f, -0.3f}, {0.94f, -0.7f, 2.3f}}},
+        0x0000FFFF),
+	    //Curve({{{0.8f, -0.58f, -1.0f}, {-1.76f, -1.0f, 0.3f}, {-0.94f, 0.7f, -2.3f}}},
+        //0xFFFF00FF),
 	};
 }
 
@@ -68,7 +76,7 @@ void Objects::UpdateAllCollisions() {
 		aabb.Update();
 		aabb.SetHit(false);
 	}
-	for (auto& obb : obbs){
+	for (auto& obb : obbs) {
 		obb.Update();
 		obb.SetHit(false);
 	}
@@ -236,6 +244,7 @@ void Objects::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewp
 	drawList(triangles);
 	drawList(aabbs);
 	drawList(obbs);
+	drawList(curves);
 }
 #pragma endregion
 
@@ -280,6 +289,7 @@ void Objects::DrawImgui() {
 	DrawObjectTree("Triangles", triangles, "Triangle");
 	DrawObjectTree("AABBs", aabbs, "AABB");
 	DrawObjectTree("OBBs", obbs, "OBB");
+	DrawObjectTree("Curves", curves, "Curve");
 
 	ImGui::End();
 }

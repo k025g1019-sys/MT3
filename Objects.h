@@ -8,6 +8,7 @@ class Segment;
 class Triangle;
 class AABB;
 class OBB;
+class Curve;
 
 class Objects {
 public:
@@ -25,4 +26,5 @@ private:
 	std::vector<Triangle> triangles;
 	std::vector<AABB> aabbs;
 	std::vector<OBB> obbs;
+	std::vector<Curve> curves;
 };

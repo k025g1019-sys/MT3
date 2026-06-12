@@ -1,6 +1,6 @@
 #pragma once
-#include "Vector3.h"
 #include <array>
+#include "Vector3.h"
 
 struct Matrix4x4;
 
