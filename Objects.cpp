@@ -57,7 +57,7 @@ Objects::Objects() {
 	};
 
 	hierarchies = {
-		Hierarchy()
+		//Hierarchy()
 	};
 }
 

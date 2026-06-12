@@ -41,6 +41,12 @@ public:
 private:
 	char keys[256]{};
 	char preKeys[256]{};
+
+private:
+	Vector3 c;
+	Vector3 d;
+	Vector3 e;
+	Matrix4x4 rotateMatrix;
 };
 #pragma endregion
 
