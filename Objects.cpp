@@ -8,6 +8,7 @@
 #include "Sphere.h"
 #include "Triangle.h"
 #include "Curve.h"
+#include "Hierarchy.h"
 #ifdef _DEBUG
 #include <imgui.h>
 #endif
@@ -49,10 +50,14 @@ Objects::Objects() {
 	};
 
 	curves = {
-	    Curve({{{-0.8f, 0.58f, 1.0f}, {1.76f, 1.0f, -0.3f}, {0.94f, -0.7f, 2.3f}}},
-        0x0000FFFF),
+	    //Curve({{{-0.8f, 0.58f, 1.0f}, {1.76f, 1.0f, -0.3f}, {0.94f, -0.7f, 2.3f}}},
+        //0x0000FFFF),
 	    //Curve({{{0.8f, -0.58f, -1.0f}, {-1.76f, -1.0f, 0.3f}, {-0.94f, 0.7f, -2.3f}}},
         //0xFFFF00FF),
+	};
+
+	hierarchies = {
+		Hierarchy()
 	};
 }
 
@@ -82,6 +87,9 @@ void Objects::UpdateAllCollisions() {
 	}
 	for (auto& segment : segments) {
 		segment.SetHit(false);
+	}
+	for (auto& hierarchy : hierarchies) {
+		hierarchy.Update();
 	}
 
 	///
@@ -245,6 +253,7 @@ void Objects::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewp
 	drawList(aabbs);
 	drawList(obbs);
 	drawList(curves);
+	drawList(hierarchies);
 }
 #pragma endregion
 
@@ -290,6 +299,7 @@ void Objects::DrawImgui() {
 	DrawObjectTree("AABBs", aabbs, "AABB");
 	DrawObjectTree("OBBs", obbs, "OBB");
 	DrawObjectTree("Curves", curves, "Curve");
+	DrawObjectTree("Hierarchies", hierarchies, "Hierarchy");
 
 	ImGui::End();
 }

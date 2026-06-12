@@ -173,6 +173,7 @@ xcopy C:\KamataEngine\DirectXGame\Resources "$(OutDirFullPath)NoviceResources" /
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="Curve.cpp" />
+    <ClCompile Include="Hierarchy.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Matrix4x4.cpp" />
     <ClCompile Include="OBB.cpp" />
@@ -216,6 +217,7 @@ xcopy C:\KamataEngine\DirectXGame\Resources "$(OutDirFullPath)NoviceResources" /
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="Curve.h" />
+    <ClInclude Include="Hierarchy.h" />
     <ClInclude Include="Matrix4x4.h" />
     <ClInclude Include="OBB.h" />
     <ClInclude Include="Objects.h" />

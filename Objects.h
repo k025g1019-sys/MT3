@@ -9,6 +9,7 @@ class Triangle;
 class AABB;
 class OBB;
 class Curve;
+class Hierarchy;
 
 class Objects {
 public:
@@ -27,4 +28,5 @@ private:
 	std::vector<AABB> aabbs;
 	std::vector<OBB> obbs;
 	std::vector<Curve> curves;
+	std::vector<Hierarchy> hierarchies;
 };
