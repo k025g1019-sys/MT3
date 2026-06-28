@@ -9,6 +9,7 @@
 #include "Triangle.h"
 #include "Curve.h"
 #include "Hierarchy.h"
+#include "Spring.h"
 #ifdef _DEBUG
 #include <imgui.h>
 #endif
@@ -59,6 +60,10 @@ Objects::Objects() {
 	hierarchies = {
 		//Hierarchy()
 	};
+
+	springs = {
+	    Spring(),
+	};
 }
 
 #pragma region Color
@@ -90,6 +95,9 @@ void Objects::UpdateAllCollisions() {
 	}
 	for (auto& hierarchy : hierarchies) {
 		hierarchy.Update();
+	}
+	for (auto& spring : springs) {
+		spring.Update();
 	}
 
 	///
@@ -254,6 +262,7 @@ void Objects::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewp
 	drawList(obbs);
 	drawList(curves);
 	drawList(hierarchies);
+	drawList(springs);
 }
 #pragma endregion
 
@@ -300,6 +309,7 @@ void Objects::DrawImgui() {
 	DrawObjectTree("OBBs", obbs, "OBB");
 	DrawObjectTree("Curves", curves, "Curve");
 	DrawObjectTree("Hierarchies", hierarchies, "Hierarchy");
+	DrawObjectTree("Springs", springs, "Spring");
 
 	ImGui::End();
 }

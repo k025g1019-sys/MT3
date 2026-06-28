@@ -59,6 +59,9 @@
     <ClCompile Include="Curve.cpp">
       <Filter>KamataEngine</Filter>
     </ClCompile>
+    <ClCompile Include="Spring.cpp">
+      <Filter>KamataEngine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\KamataEngine\DirectXGame\audio\Audio.h">
@@ -176,6 +179,9 @@
     </ClInclude>
     <ClInclude Include="OBB.h" />
     <ClInclude Include="Curve.h">
+      <Filter>KamataEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Spring.h">
       <Filter>KamataEngine</Filter>
     </ClInclude>
   </ItemGroup>
