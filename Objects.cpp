@@ -10,6 +10,7 @@
 #include "Curve.h"
 #include "Hierarchy.h"
 #include "Spring.h"
+#include "CircularMotion.h"
 #ifdef _DEBUG
 #include <imgui.h>
 #endif
@@ -62,7 +63,11 @@ Objects::Objects() {
 	};
 
 	springs = {
-	    Spring(),
+	    // Spring(),
+	};
+
+	circularMotions = {
+	    CircularMotion(),
 	};
 }
 
@@ -98,6 +103,9 @@ void Objects::UpdateAllCollisions() {
 	}
 	for (auto& spring : springs) {
 		spring.Update();
+	}
+	for (auto& circularMotion : circularMotions) {
+		circularMotion.Update();
 	}
 
 	///
@@ -263,6 +271,7 @@ void Objects::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewp
 	drawList(curves);
 	drawList(hierarchies);
 	drawList(springs);
+	drawList(circularMotions);
 }
 #pragma endregion
 
@@ -310,6 +319,7 @@ void Objects::DrawImgui() {
 	DrawObjectTree("Curves", curves, "Curve");
 	DrawObjectTree("Hierarchies", hierarchies, "Hierarchy");
 	DrawObjectTree("Springs", springs, "Spring");
+	DrawObjectTree("CircularMotions", circularMotions, "CircularMotion");
 
 	ImGui::End();
 }

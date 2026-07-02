@@ -35,7 +35,8 @@ void Spring::Update() {
 	if (length != 0.0f) {
 		Vector3 direction = Normalize(diff);
 		Vector3 restPosition = anchor_ + direction * naturalLength_;
-		Vector3 displacement = length * (ball_.position - restPosition);
+		// フックの法則 F = -kx の変位ベクトルx。自然長の位置(restPosition)から現在位置までのずれ
+		Vector3 displacement = ball_.position - restPosition;
 		Vector3 restoringForce = -stiffness_ * displacement;
 		// 減衰抵抗を計算する
 		Vector3 dampingForce = -dampingCoefficient_ * ball_.velocity;

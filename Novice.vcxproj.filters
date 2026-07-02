@@ -62,6 +62,9 @@
     <ClCompile Include="Spring.cpp">
       <Filter>KamataEngine</Filter>
     </ClCompile>
+    <ClCompile Include="CircularMotion.cpp">
+      <Filter>KamataEngine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\KamataEngine\DirectXGame\audio\Audio.h">
@@ -182,6 +185,9 @@
       <Filter>KamataEngine</Filter>
     </ClInclude>
     <ClInclude Include="Spring.h">
+      <Filter>KamataEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="CircularMotion.h">
       <Filter>KamataEngine</Filter>
     </ClInclude>
   </ItemGroup>
