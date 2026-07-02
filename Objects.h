@@ -12,6 +12,7 @@ class Curve;
 class Hierarchy;
 class Spring;
 class CircularMotion;
+class Pendulum;
 
 class Objects {
 public:
@@ -33,4 +34,5 @@ private:
 	std::vector<Hierarchy> hierarchies;
 	std::vector<Spring> springs;
 	std::vector<CircularMotion> circularMotions;
+	std::vector<Pendulum> pendulums;
 };

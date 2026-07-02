@@ -65,6 +65,9 @@
     <ClCompile Include="CircularMotion.cpp">
       <Filter>KamataEngine</Filter>
     </ClCompile>
+    <ClCompile Include="Pendulum.cpp">
+      <Filter>KamataEngine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\KamataEngine\DirectXGame\audio\Audio.h">
@@ -188,6 +191,9 @@
       <Filter>KamataEngine</Filter>
     </ClInclude>
     <ClInclude Include="CircularMotion.h">
+      <Filter>KamataEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Pendulum.h">
       <Filter>KamataEngine</Filter>
     </ClInclude>
   </ItemGroup>
