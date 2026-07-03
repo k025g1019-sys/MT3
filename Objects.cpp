@@ -12,6 +12,7 @@
 #include "Spring.h"
 #include "CircularMotion.h"
 #include "Pendulum.h"
+#include "ConicalPendulum.h"
 #ifdef _DEBUG
 #include <imgui.h>
 #endif
@@ -72,7 +73,11 @@ Objects::Objects() {
 	};
 
 	pendulums = {
-	    Pendulum(),
+	    // Pendulum(),
+	};
+
+	conicalPendulums = {
+	    ConicalPendulum(),
 	};
 }
 
@@ -114,6 +119,9 @@ void Objects::UpdateAllCollisions() {
 	}
 	for (auto& pendulum : pendulums) {
 		pendulum.Update();
+	}
+	for (auto& conicalPendulum : conicalPendulums) {
+		conicalPendulum.Update();
 	}
 
 	///
@@ -281,6 +289,7 @@ void Objects::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewp
 	drawList(springs);
 	drawList(circularMotions);
 	drawList(pendulums);
+	drawList(conicalPendulums);
 }
 #pragma endregion
 
@@ -330,6 +339,7 @@ void Objects::DrawImgui() {
 	DrawObjectTree("Springs", springs, "Spring");
 	DrawObjectTree("CircularMotions", circularMotions, "CircularMotion");
 	DrawObjectTree("Pendulums", pendulums, "Pendulum");
+	DrawObjectTree("ConicalPendulums", conicalPendulums, "ConicalPendulum");
 
 	ImGui::End();
 }
