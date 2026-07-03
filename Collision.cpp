@@ -48,6 +48,26 @@ bool IsSpherePlaneCollision(const Sphere& sphere, const Plane& plane) {
 }
 #pragma endregion
 
+#pragma region Capsule Plane
+// カプセル(startからendへスイープした球)と平面の衝突判定
+bool IsCapsulePlaneCollision(const Vector3& start, const Vector3& end, float radius, const Plane& plane) {
+	const Vector3& normal = plane.GetNormal();
+	float d = plane.GetDistance();
+
+	// 両端点の平面までの符号付き距離
+	float startDistance = Dot(start, normal) - d;
+	float endDistance = Dot(end, normal) - d;
+
+	// 符号が異なれば線分が平面を貫いている
+	if (startDistance * endDistance <= 0.0f) {
+		return true;
+	}
+
+	// 貫いていなければ、平面に近い方の端点との距離で判定
+	return std::min(std::abs(startDistance), std::abs(endDistance)) <= radius;
+}
+#pragma endregion
+
 #pragma region Segment Plane
 // 線と平面の衝突判定
 bool IsSegmentPlaneCollision(const Segment& segment, const Plane& plane) {

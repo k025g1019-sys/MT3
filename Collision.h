@@ -17,6 +17,9 @@ bool IsSphereSphereCollision(const Sphere& s1, const Sphere& s2);
 // 球と平面の衝突判定
 bool IsSpherePlaneCollision(const Sphere& sphere, const Plane& plane);
 
+// カプセル(startからendへスイープした球)と平面の衝突判定
+bool IsCapsulePlaneCollision(const Vector3& start, const Vector3& end, float radius, const Plane& plane);
+
 // 線と平面の衝突判定
 bool IsSegmentPlaneCollision(const Segment& segment, const Plane& plane);
 

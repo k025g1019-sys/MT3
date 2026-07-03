@@ -21,10 +21,17 @@ Objects::Objects() {
 	spheres = {
 	    // Sphere({0.0f, 0.0f, 0.0f}, 0.5f),
 	    // Sphere({0.8f, 0.0f, 1.0f}, 0.4f),
+
+	    // 重力を有効にした球(平面に落として反射する)
+	    // 引数: 位置, 半径, 色, 重力を有効にするかのフラグ, 質量, 反発係数e
+	    Sphere({0.8f, 1.2f, 0.3f}, 0.05f, 0xFFFFFFFF, true, 2.0f, 0.8f),
 	};
 
 	planes = {
 	    // Plane({0.0f, 1.0f, 0.0f}, 1.5f),
+
+	    // 法線はSetNormal内で正規化される
+	    Plane({-0.2f, 0.9f, -0.3f}, 0.0f),
 	};
 
 	segments = {
@@ -77,7 +84,7 @@ Objects::Objects() {
 	};
 
 	conicalPendulums = {
-	    ConicalPendulum(),
+	    // ConicalPendulum(),
 	};
 }
 
@@ -142,7 +149,13 @@ void Objects::UpdateAllCollisions() {
 	// 球と平面
 	for (size_t i = 0; i < spheres.size(); ++i) {
 		for (size_t j = 0; j < planes.size(); ++j) {
-			if (IsSpherePlaneCollision(spheres[i], planes[j])) {
+			if (spheres[i].IsGravityEnabled()) {
+				// 重力有効時は1フレームの移動区間をスイープしたカプセルで判定し、トンネリングを防ぐ
+				// 接地中は毎フレーム衝突扱いになるため、ヒット色は変えずに反射処理だけ行う
+				if (IsCapsulePlaneCollision(spheres[i].GetPrevCenter(), spheres[i].GetCenter(), spheres[i].GetRadius(), planes[j])) {
+					spheres[i].BounceOffPlane(planes[j]);
+				}
+			} else if (IsSpherePlaneCollision(spheres[i], planes[j])) {
 				spheres[i].SetHit(true);
 			}
 		}

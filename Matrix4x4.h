@@ -78,6 +78,9 @@ Vector3 Multiply(const Vector3& v, float s);
 // 正射影ベクトル
 Vector3 Project(const Vector3& v1, const Vector3& v2);
 
+// 反射ベクトル
+Vector3 Reflect(const Vector3& input, const Vector3& normal);
+
 #pragma endregion
 
 #pragma region

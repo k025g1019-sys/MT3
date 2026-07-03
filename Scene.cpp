@@ -52,6 +52,7 @@ void TitleScene::Update(SceneManager& manager) {
 	memcpy(preKeys, keys, 256);
 	Novice::GetHitKeyStateAll(keys);
 
+#ifdef _DEBUG
 	ImGui::Begin("Window");
 	ImGui::Text("c :%f, %f, %f", c.x, c.y, c.z);
 	ImGui::Text("d :%f, %f, %f", d.x, d.y, d.z);
@@ -61,6 +62,7 @@ void TitleScene::Update(SceneManager& manager) {
 	    rotateMatrix.m[1][1], rotateMatrix.m[1][2], rotateMatrix.m[1][3], rotateMatrix.m[2][0], rotateMatrix.m[2][1], rotateMatrix.m[2][2], rotateMatrix.m[2][3], rotateMatrix.m[3][0],
 	    rotateMatrix.m[3][1], rotateMatrix.m[3][2], rotateMatrix.m[3][3]);
 	ImGui::End();
+#endif
 
 	if (keys[DIK_RETURN] && !preKeys[DIK_RETURN]) {
 		manager.SetScene(std::make_unique<GameScene>());

@@ -292,6 +292,11 @@ Vector3 Project(const Vector3& v1, const Vector3& v2) {
 	return Multiply(v2, t);
 }
 
+// 反射ベクトル r = v - 2(v・n)n (nは正規化された法線)
+Vector3 Reflect(const Vector3& input, const Vector3& normal) {
+	return input - 2.0f * Dot(input, normal) * normal;
+}
+
 #pragma endregion
 
 #pragma region

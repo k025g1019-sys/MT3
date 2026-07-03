@@ -36,7 +36,10 @@ void Plane::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewpor
 #ifdef _DEBUG
 #include <imgui.h>
 void Plane::DrawImGui() {
-	ImGui::DragFloat3("Normal", &normal_.x, 0.01f);
+	Vector3 normal = normal_;
+	if (ImGui::DragFloat3("Normal", &normal.x, 0.01f)) {
+		SetNormal(normal); // 正規化される
+	}
 	ImGui::DragFloat("Distance", &distance_, 0.01f);
 	ImGui::Separator();
 }

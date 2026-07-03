@@ -1,7 +1,9 @@
 #include <Novice.h>
 #include "Hierarchy.h"
 #include "Sphere.h"
+#ifdef _DEBUG
 #include <imgui.h>
+#endif
 
 void Hierarchy::Update() {
 	for (int i = 0; i < 3; i++) {
@@ -48,6 +50,7 @@ void Hierarchy::Draw(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& vie
 	Novice::DrawLine((int)s1.x, (int)s1.y, (int)s2.x, (int)s2.y, WHITE);
 }
 
+#ifdef _DEBUG
 void Hierarchy::DrawImGui() {
 	if (ImGui::TreeNode("Shoulder")) {
 
@@ -77,3 +80,4 @@ void Hierarchy::DrawImGui() {
 	}
 	ImGui::Separator();
 }
+#endif
