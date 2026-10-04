@@ -2,7 +2,9 @@
 #include "Camera.h"
 #include "Matrix4x4.h"
 #include "Objects.h"
+#include "Spherical.h"
 #include <memory>
+#include <numbers>
 
 const int kWindowWidth = 1280;
 const int kWindowHeight = 720;
@@ -64,6 +66,9 @@ private:
 
 	Matrix4x4 viewProjectionMatrix = MakeIdentity4x4();
 	Matrix4x4 viewportMatrix = MakeIdentity4x4();
+
+	// 球面座標で表したカメラ位置(r=6, θ=0, φ=-π/2 → 直交座標(0, 0, -6))
+	Spherical spherical{6.0f, 0.0f, -std::numbers::pi_v<float> / 2.0f};
 
 	char keys[256]{};
 	char preKeys[256]{};

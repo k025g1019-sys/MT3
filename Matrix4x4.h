@@ -45,6 +45,9 @@ Matrix4x4 MakeRotateZMatrix(float radian);
 // 3次元アフィン変換行列
 Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate);
 
+// 注視点を向くカメラのワールド行列(ビュー行列はこの逆行列)
+Matrix4x4 MakeLookAtCameraMatrix(const Vector3& eye, const Vector3& target);
+
 #pragma endregion
 
 #pragma region

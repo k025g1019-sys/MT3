@@ -206,6 +206,27 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 	return affine;
 }
 
+// 注視点を向くカメラのワールド行列
+Matrix4x4 MakeLookAtCameraMatrix(const Vector3& eye, const Vector3& target) {
+	// 世界の上方向
+	Vector3 worldUp{0.0f, 1.0f, 0.0f};
+
+	// 1. カメラ位置から注視点へ向かう向きが、カメラの前F
+	Vector3 forward = Normalize(target - eye);
+	// 2. 世界の上と前Fの外積で、カメラの右R
+	Vector3 right = Normalize(Cross(worldUp, forward));
+	// 3. 前Fと右Rの外積で、カメラ自身の上U(FとRは直交する長さ1のベクトルなので正規化は不要)
+	Vector3 up = Cross(forward, right);
+
+	// 右・上・前の3軸(回転)とカメラ位置(平行移動)を行ごとに並べる
+	return {{
+	    {right.x, right.y, right.z, 0.0f},
+	    {up.x, up.y, up.z, 0.0f},
+	    {forward.x, forward.y, forward.z, 0.0f},
+	    {eye.x, eye.y, eye.z, 1.0f},
+	}};
+}
+
 #pragma endregion
 
 #pragma region
